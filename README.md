@@ -1,2 +1,13 @@
-# csharp-bms-parser
-BMS(Be-Music Script) Parser with C#
+# C# BMS Parser
+## 개요
+BMS 구동기인 beatoraja에서 사용되는 [jbms-parser](https://github.com/exch-bms2/jbms-parser)를 C#으로 변환해보는 프로젝트입니다.
+## BMS가 뭔가요?
+BMS는 Be-Music Script의 줄임말로 KONAMI 사의 beatmania(beatmania IIDX도 포함)를 참고하여 Yane Urao가 제안한 파일 포맷입니다.   
+요즘 자주 사용되는 확장자는 bms, bml, bme, pms 등이 있으며 원한다면 다른 확장자로 직접 만들어서 채보를 처리할 수 있습니다.   
+## beatoraja가 뭔가요?
+beatoraja는 현재 인기가 많은 LR2 다음으로 유명한 구동기입니다.   
+오픈소스로 배포되고 있는 구동기 중에서는 지원 범위가 제일 넓으며, 지금까지도 업데이트가 되고 있습니다.
+## 이 프로젝트에서는 무엇을 하나요?
+유니티에서 리듬게임을 만드는 시도를 하려고 하는데, 굳이 유니티의 게임 오브젝트를 상속 받아 기능을 사용할 필요가 없다고 생각해서 별도의 파서를 만들어 dll로 추가하려고 합니다.   
+그 중 현재 오픈소스로 배포되고 있는 구동기 중에서 파일 지원 범위가 제일 넓고 지금까지도 업데이트가 지속되는 구동기인 beatoraja를 기반으로 Java에서 C#으로 변경해보는 프로젝트 입니다.   
+이 과정에서 개인적으로 OOP의 구조에 대해 공부를 하면서 아키텍쳐는 어떻게 구성되어 있는지, 무슨 패턴을 사용했는지에 대해서 분석하기 위한 프로젝트이기도 합니다.
