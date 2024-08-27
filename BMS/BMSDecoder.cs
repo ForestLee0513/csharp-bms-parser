@@ -85,10 +85,13 @@ namespace BMS
             {
                 sha256Hash = BitConverter.ToString(SHA256.Create().ComputeHash(sha256Stream)).Replace("-", "").ToLower();
             }
+
+            model.SetMD5(md5Hash);
+            model.SetSHA256(sha256Hash);
             #endregion
 
             #region Decode
-            model.Mode = isPms ? Mode.POPN_9K : Mode.BEAT_5K;
+            model.SetMode(isPms ? Mode.POPN_9K : Mode.BEAT_5K);
 
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             using var reader = new StreamReader(stream, Encoding.GetEncoding(932));
@@ -96,12 +99,49 @@ namespace BMS
             {
                 string? line = reader.ReadLine();
 
-                Console.WriteLine(line);
-            } while (!reader.EndOfStream);
+                if (line == null || line.Length < 2)
+                    continue;
 
+                if (line[0] == '#')
+                {
+                    if (MatchesReserveWord(line, "RANDOM"))
+                    {
+
+                    }
+                    else if (MatchesReserveWord(line, "IF"))
+                    {
+
+                    }
+                    else if (MatchesReserveWord(line, "ENDIF"))
+                    {
+
+                    }
+                    else if (MatchesReserveWord(line, "ENDRANDOM"))
+                    {
+
+                    }
+                }
+            } while (!reader.EndOfStream);
             #endregion
 
             return null;
         }
+        
+        private bool MatchesReserveWord(string line, string s)
+        {
+            if (line.Length <= s.Length)
+                return false;
+
+            for (int i = 0; i < s.Length; i++) {
+                char c = line[i + 1];
+                char c2 = s[i];
+                if (c != c2 && c != c2 + 32) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
     }
 }
