@@ -24,9 +24,8 @@ namespace BMS
         // BMSModel 반환
         public new BMSModel? Decode(string path)
         {
-            try 
+            try
             {
-
                 BMSModel? model = Decode(path, File.ReadAllBytes(path), path.ToLower().EndsWith(".pms"), []);
                 if (model == null)
                     return null;
@@ -63,9 +62,8 @@ namespace BMS
 
         private Stack<int> randomStack = new Stack<int>();
         private Stack<bool> skipStack = new Stack<bool>();
-        private Stack<int> selectedRandom = new Stack<int>();
 
-        private BMSModel? Decode(string? path, byte[] data, bool isPms, int[] selectedRandom)
+        private BMSModel Decode(string? path, byte[] data, bool isPms, int[] selectedRandom)
         {
             long time = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             BMSModel model = new();
@@ -93,6 +91,9 @@ namespace BMS
             #region Decode
             model.SetMode(isPms ? Mode.POPN_9K : Mode.BEAT_5K);
 
+            randomStack.Clear();
+            skipStack.Clear();
+
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             using var reader = new StreamReader(stream, Encoding.GetEncoding(932));
             do
@@ -104,27 +105,84 @@ namespace BMS
 
                 if (line[0] == '#')
                 {
+                    string value = line.IndexOf(' ') > -1 ? line.Substring(line.IndexOf(' ') + 1) : "";
+
+                    #region Random
                     if (MatchesReserveWord(line, "RANDOM"))
                     {
-
+                        if (selectedRandom.Length == 0)
+                        {
+                            int.TryParse(value, out int n);
+                            int randomResult = new Random().Next(1, n + 1);
+                            randomStack.Push(randomResult);
+                            continue;
+                        }
+                        else
+                        {
+                            for (int i = selectedRandom.Length - 1; i > -1; --i)
+                            {
+                                int result = selectedRandom[i];
+                                randomStack.Push(result);
+                                continue;
+                            }
+                        }
                     }
                     else if (MatchesReserveWord(line, "IF"))
                     {
+                        if (randomStack.Count == 0)
+                            continue;
 
+                        int currentRandom = randomStack.Peek();
+                        Int32.TryParse(value, out int n);
+                        skipStack.Push(currentRandom != n);
+                        continue;
+                    }
+                    else if (MatchesReserveWord(line, "ELSE"))
+                    {
+                        if (skipStack.Count == 0)
+                            continue;
+                        bool currentSkip = skipStack.Pop();
+                        skipStack.Push(!currentSkip);
+                        continue;
+                    }
+                    else if (MatchesReserveWord(line, "ELSEIF"))
+                    {
+                        if (skipStack.Count == 0)
+                            continue;
+                        bool currentSkip = skipStack.Pop();
+                        int currentRandom = randomStack.Peek();
+                        Int32.TryParse(value, out int n);
+                        skipStack.Push(currentSkip && currentRandom != n);
+                        continue;
                     }
                     else if (MatchesReserveWord(line, "ENDIF"))
                     {
-
+                        if (skipStack.Count == 0)
+                            continue;
+                        skipStack.Pop();
+                        continue;
                     }
                     else if (MatchesReserveWord(line, "ENDRANDOM"))
                     {
+                        if (randomStack.Count == 0)
+                            continue;
 
+                        randomStack.Pop();
+                        continue;
                     }
+                    if (skipStack.Count > 0 && skipStack.Peek() == true)
+                    {
+                        continue;
+                    }
+                    #endregion
+                    #region Commands
+                    Console.WriteLine(line);
+                    #endregion
                 }
             } while (!reader.EndOfStream);
             #endregion
 
-            return null;
+            return model;
         }
         
         private bool MatchesReserveWord(string line, string s)
@@ -142,6 +200,5 @@ namespace BMS
 
             return true;
         }
-
     }
 }
