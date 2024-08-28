@@ -1,4 +1,8 @@
-﻿using System.Security.Cryptography;
+﻿using System.Collections.Generic;
+using System.Globalization;
+using System.Linq.Expressions;
+using System.Runtime.InteropServices.Marshalling;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace BMS
@@ -60,13 +64,22 @@ namespace BMS
             return Decode(null, data, isPms, random);
         }
 
-        private Stack<int> randomStack = new Stack<int>();
-        private Stack<bool> skipStack = new Stack<bool>();
+        private Stack<int> randomStack = new();
+        private Stack<bool> skipStack = new();
+
+        private List<string>[] lines = new List<string>[1000];
+
+        private Dictionary<int, double> scrollTable = new();
+        private Dictionary<int, double> stopTable = new();
+        private Dictionary<int, double> bpmTable = new();
 
         private BMSModel Decode(string? path, byte[] data, bool isPms, int[] selectedRandom)
         {
             long time = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             BMSModel model = new();
+            scrollTable.Clear();
+            stopTable.Clear();
+            bpmTable.Clear();
 
             using MemoryStream stream = new(data);
 
@@ -93,6 +106,8 @@ namespace BMS
 
             randomStack.Clear();
             skipStack.Clear();
+
+            int maxsec = 0;
 
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             using var reader = new StreamReader(stream, Encoding.GetEncoding(932));
@@ -176,10 +191,100 @@ namespace BMS
                     }
                     #endregion
                     #region Commands
-                    Console.WriteLine(line);
+                    char c = line[1];
+                    int baseType = model.BaseType;
+                    if ('0' <= c && c <= '9' && line.Length > 6)
+                    {
+                        char c2 = line[2];
+                        char c3 = line[3];
+                        if ('0' <= c2 && c2 <= '9' && '0' <= c3 && c3 <= '9')
+                        {
+                            int barIndex = (c - '0') * 100 + (c2 - '0') * 10 + (c3 - '0');
+                            List<string> l = lines[barIndex];
+                            if (l == null)
+                            {
+                                l = new List<string>();
+                                lines[barIndex] = l;
+                            }
+                            l.Add(line);
+                            maxsec = (maxsec > barIndex) ? maxsec : barIndex;
+                        }
+                    }
+                    else if (MatchesReserveWord(line, "BPM"))
+                    {
+                        if (line[4] == ' ')
+                        {
+                            // Some track bpm is using decimal point like 'xi - FREEDOM DiVE↓' (BPM: 222.22)
+                            double.TryParse(value, out double bpm);
+                            if (bpm > 0)
+                                model.SetBpm(bpm);
+                            else
+                                Console.WriteLine("You can't set bpm to 0");
+                        }
+                        else
+                        {
+                            double.TryParse(value, out double bpm);
+                            if (bpm > 0)
+                            {
+                                if (model.BaseType == 62)
+                                    bpmTable.Add(ParseInt62(line, 4), bpm);
+                                else
+                                    bpmTable.Add(ParseInt36(line, 4), bpm);
+                            }
+                        }
+                    }
+                    else if (MatchesReserveWord(line, "WAV"))
+                    {
+                        if (line.Length >= 8)
+                        {
+                            try 
+                            {
+                                string fileName = line.Substring(7).Trim().Replace("\\", "/");
+                                if (baseType == 62)
+                                {
+                                    wm[ParseInt62(line, 4)] = wavList.Count(s => s != null);
+                                }
+                                else
+                                {
+                                    wm[ParseInt36(line, 4)] = wavList.Count(s => s != null);
+                                }
+                                wavList[wavList.Count(s => s != null)] = fileName;
+                            }
+                            catch (FormatException e)
+                            {
+
+                            }
+                        }
+                    }
+                    else if (MatchesReserveWord(line, "BMP"))
+                    {
+                        if (line.Length >= 8)
+                        {
+                            try
+                            {
+                                string fileName = line.Substring(7).Trim().Replace("\\", "/");
+                                if (baseType == 62)
+                                {
+                                    bm[ParseInt62(line, 4)] = bgaList.Count(s => s != null);
+                                }
+                                else
+                                {
+                                    bm[ParseInt36(line, 4)] = bgaList.Count(s => s != null);
+                                }
+                                bgaList[bgaList.Count(s => s != null)] = fileName;
+                            }
+                            catch (FormatException e)
+                            {
+
+                            }
+                        }
+                    }
                     #endregion
                 }
             } while (!reader.EndOfStream);
+
+            model.SetWavMap(wavList);
+            model.SetBgaMap(bgaList);
             #endregion
 
             return model;

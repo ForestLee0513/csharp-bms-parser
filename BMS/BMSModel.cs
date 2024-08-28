@@ -35,6 +35,8 @@
 
         public string MD5 { get; private set; }
         public string SHA256 { get; private set; }
+        public string[] WavMap { get; private set; }
+        public string[] BgaMap { get; private set; }
 
         public int BaseType { get; private set; }
 
@@ -67,6 +69,8 @@
         
         public void SetMD5(string md5) => MD5 = md5;
         public void SetSHA256(string sha256) => SHA256 = sha256;
+        public void SetWavMap(string[] wavMap) => WavMap = wavMap;
+        public void SetBgaMap(string[] bgaMap) => BgaMap = bgaMap;
         
         public void SetBaseType(int baseType) => BaseType = baseType;
         public void SetLnType(int lnType) => LnType = lnType;
