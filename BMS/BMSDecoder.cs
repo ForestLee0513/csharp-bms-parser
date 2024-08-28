@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
 using System.Linq.Expressions;
+using System.Reflection;
+using System.Reflection.Metadata.Ecma335;
 using System.Runtime.InteropServices.Marshalling;
 using System.Security.Cryptography;
 using System.Text;
@@ -212,32 +214,39 @@ namespace BMS
                     }
                     else if (MatchesReserveWord(line, "BPM"))
                     {
-                        if (line[4] == ' ')
+                        try
                         {
-                            // Some track bpm is using decimal point like 'xi - FREEDOM DiVE↓' (BPM: 222.22)
-                            double.TryParse(value, out double bpm);
-                            if (bpm > 0)
-                                model.SetBpm(bpm);
-                            else
-                                Console.WriteLine("You can't set bpm to 0");
-                        }
-                        else
-                        {
-                            double.TryParse(value, out double bpm);
-                            if (bpm > 0)
+                            if (line[4] == ' ')
                             {
-                                if (model.BaseType == 62)
-                                    bpmTable.Add(ParseInt62(line, 4), bpm);
+                                // Some track bpm is using decimal point like 'xi - FREEDOM DiVE↓' (BPM: 222.22)
+                                double.TryParse(value, out double bpm);
+                                if (bpm > 0)
+                                    model.SetBpm(bpm);
                                 else
-                                    bpmTable.Add(ParseInt36(line, 4), bpm);
+                                    Console.WriteLine($"You can't set bpm to 0 {line}");
                             }
+                            else
+                            {
+                                double.TryParse(value, out double bpm);
+                                if (bpm > 0)
+                                {
+                                    if (model.BaseType == 62)
+                                        bpmTable.Add(ParseInt62(line, 4), bpm);
+                                    else
+                                        bpmTable.Add(ParseInt36(line, 4), bpm);
+                                }
+                            }
+                        }
+                        catch (FormatException e)
+                        {
+                            Console.WriteLine($"This BPM command isn't correct: {line}");
                         }
                     }
                     else if (MatchesReserveWord(line, "WAV"))
                     {
                         if (line.Length >= 8)
                         {
-                            try 
+                            try
                             {
                                 string fileName = line.Substring(7).Trim().Replace("\\", "/");
                                 if (baseType == 62)
@@ -252,8 +261,12 @@ namespace BMS
                             }
                             catch (FormatException e)
                             {
-
+                                Console.WriteLine($"This BMP command isn't correct: {line}");
                             }
+                        }
+                        else
+                        {
+                            Console.WriteLine($"This WAV command isn't correct: {line}");
                         }
                     }
                     else if (MatchesReserveWord(line, "BMP"))
@@ -275,7 +288,77 @@ namespace BMS
                             }
                             catch (FormatException e)
                             {
+                                Console.WriteLine($"This BMP command isn't correct: {line}");
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine($"This BMP command isn't correct. {line}");
+                        }
+                    }
+                    else if (MatchesReserveWord(line, "STOP"))
+                    {
+                        if (line.Length >= 9)
+                        {
+                            try
+                            {
+                                double.TryParse(line.Substring(8).Trim(), out double stop);
+                                stop /= 192;
+                                if (stop < 0)
+                                {
+                                    stop = Math.Abs(stop);
+                                    Console.WriteLine($"You can't use negative stop value. {line}");
+                                }
+                                if (baseType == 62)
+                                    stopTable.Add(ParseInt62(line, 5), stop);
+                                else
+                                    stopTable.Add(ParseInt36(line, 5), stop);
+                            }
+                            catch (FormatException e)
+                            {
+                                Console.WriteLine($"This STOP command isn't correct. {line}");
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine($"This STOP command isn't correct. {line}");
+                        }
+                    }
+                    else if (MatchesReserveWord(line, "SCROLL"))
+                    {
+                        if (line.Length >= 11)
+                        {
+                            try
+                            {
+                                double.TryParse(line.Substring(10).Trim(), out double scroll);
+                                if (baseType == 62)
+                                    scrollTable.Add(ParseInt62(line, 7), scroll);
+                                else
+                                    scrollTable.Add(ParseInt36(line, 7), scroll);
+                            }
+                            catch (FormatException e)
+                            {
+                                Console.WriteLine($"This SCROLL command is not correct. {line}");
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine($"This SCROLL command is not correct. {line}");
+                        }
+                    }
+                    else
+                    {
+                        foreach (FieldInfo command in typeof(Command).GetFields(BindingFlags.Public | BindingFlags.Static))
+                        {
+                            string commandName = command.Name;
+                            if (line.Length > commandName.Length + 2 && MatchesReserveWord(line, commandName))
+                            {
+                                if (command.GetValue(null) is Command.CommandAction action)
+                                {
+                                    string arg = line.Substring(commandName.Length + 2).Trim();
 
+                                    action(model, arg);
+                                }
                             }
                         }
                     }
@@ -304,6 +387,16 @@ namespace BMS
             }
 
             return true;
+        }
+
+        private class Command
+        {
+            public delegate void CommandAction(BMSModel model, string arg);
+
+            public static readonly CommandAction PLAYER = (model, arg) =>
+            {
+
+            };
         }
     }
 }
