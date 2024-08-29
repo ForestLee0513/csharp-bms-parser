@@ -1,9 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Globalization;
-using System.Linq.Expressions;
-using System.Reflection;
-using System.Reflection.Metadata.Ecma335;
-using System.Runtime.InteropServices.Marshalling;
+﻿using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -28,37 +23,17 @@ namespace BMS
         }
 
         // BMSModel 반환
-        public new BMSModel? Decode(string path)
+        public new BMSModel Decode(string path)
         {
-            try
-            {
-                BMSModel? model = Decode(path, File.ReadAllBytes(path), path.ToLower().EndsWith(".pms"), []);
-                if (model == null)
-                    return null;
+            BMSModel model = Decode(path, File.ReadAllBytes(path), path.ToLower().EndsWith(".pms"), []);
 
-                return model;
-            }
-            catch (Exception e) 
-            {
-
-            }
-
-            return null;
+            return model;
         }
 
-        public override BMSModel? Decode(ChartInformation info)
+        public override BMSModel Decode(ChartInformation info)
         {
-            try 
-            {
-                lnType = info.LnType;
-                return Decode(info.Path, File.ReadAllBytes(info.Path), info.Path.ToLower().EndsWith(".pms"), info.SelectedRandoms);
-            }
-            catch (Exception e) 
-            {
-
-            }
-
-            return null;
+            lnType = info.LnType;
+            return Decode(info.Path, File.ReadAllBytes(info.Path), info.Path.ToLower().EndsWith(".pms"), info.SelectedRandoms); 
         }
 
         public BMSModel? Decode(byte[] data, bool isPms, int[] random)
@@ -122,14 +97,20 @@ namespace BMS
 
                 if (line[0] == '#')
                 {
-                    string value = line.IndexOf(' ') > -1 ? line.Substring(line.IndexOf(' ') + 1) : "";
+                    string arg = line.IndexOf(' ') > -1 ? line.Substring(line.IndexOf(' ') + 1) : "";
 
                     #region Random
                     if (MatchesReserveWord(line, "RANDOM"))
                     {
                         if (selectedRandom.Length == 0)
                         {
-                            int.TryParse(value, out int n);
+                            bool isValidValue = int.TryParse(arg, out int n);
+                            if (!isValidValue)
+                            {
+                                Console.WriteLine("This RANDOM command isn't correct");
+                                continue;
+                            }
+
                             int randomResult = new Random().Next(1, n + 1);
                             randomStack.Push(randomResult);
                             continue;
@@ -150,7 +131,12 @@ namespace BMS
                             continue;
 
                         int currentRandom = randomStack.Peek();
-                        Int32.TryParse(value, out int n);
+                        bool isValidValue = int.TryParse(arg, out int n);
+                        if (!isValidValue)
+                        {
+                            Console.WriteLine("This IF command isn't correct");
+                            continue;
+                        }
                         skipStack.Push(currentRandom != n);
                         continue;
                     }
@@ -168,8 +154,14 @@ namespace BMS
                             continue;
                         bool currentSkip = skipStack.Pop();
                         int currentRandom = randomStack.Peek();
-                        Int32.TryParse(value, out int n);
+                        bool isValidValue = int.TryParse(arg, out int n);
+                        if (!isValidValue)
+                        {
+                            Console.WriteLine("This ELSEIF command isn't correct");
+                            continue;
+                        }
                         skipStack.Push(currentSkip && currentRandom != n);
+
                         continue;
                     }
                     else if (MatchesReserveWord(line, "ENDIF"))
@@ -219,7 +211,7 @@ namespace BMS
                             if (line[4] == ' ')
                             {
                                 // Some track bpm is using decimal point like 'xi - FREEDOM DiVE↓' (BPM: 222.22)
-                                double.TryParse(value, out double bpm);
+                                double.TryParse(arg, out double bpm);
                                 if (bpm > 0)
                                     model.SetBpm(bpm);
                                 else
@@ -227,7 +219,7 @@ namespace BMS
                             }
                             else
                             {
-                                double.TryParse(value, out double bpm);
+                                double.TryParse(arg, out double bpm);
                                 if (bpm > 0)
                                 {
                                     if (model.BaseType == 62)
@@ -355,8 +347,6 @@ namespace BMS
                             {
                                 if (command.GetValue(null) is Command.CommandAction action)
                                 {
-                                    string arg = line.Substring(commandName.Length + 2).Trim();
-
                                     action(model, arg);
                                 }
                             }
@@ -395,7 +385,214 @@ namespace BMS
 
             public static readonly CommandAction PLAYER = (model, arg) =>
             {
+                try
+                {
+                    int.TryParse(arg, out int player);
 
+                    if (player >= 1 && player < 3)
+                        model.SetPlayer(player);
+                    else
+                        Console.WriteLine("This PLAYER command is incorrect.");
+                }
+                catch (FormatException e)
+                {
+                    Console.WriteLine("This PLAYER command is incorrect.");
+                }
+            };
+
+            public static readonly CommandAction GENRE = (model, arg) =>
+            {
+                model.SetGenre(arg);
+            };
+
+            public static readonly CommandAction TITLE = (model, arg) =>
+            {
+                model.SetTitle(arg);
+            };
+
+            public static readonly CommandAction SUBTITLE = (model, arg) =>
+            {
+                model.SetSubtitle(arg);
+            };
+
+            public static readonly CommandAction ARTIST = (model, arg) =>
+            {
+                model.SetArtist(arg);
+            };
+
+            public static readonly CommandAction SUBARTIST = (model, arg) =>
+            {
+                model.SetSubartist(arg);
+            };
+
+            public static readonly CommandAction PLAYLEVEL = (model, arg) =>
+            {
+                model.SetPlayLevel(arg);
+            };
+
+            public static readonly CommandAction RANK = (model, arg) =>
+            {
+                try
+                {
+                    int.TryParse(arg, out int rank);
+                    if (rank >= 0 && rank < 5)
+                    {
+                        model.SetJudgeRank(rank);
+                        model.SetJudgeRankType(BMSModelDefine.JudgeRankType.BMS_RANK);
+                    }
+                    else
+                    {
+                        Console.WriteLine("This RANK command isn't correct.");
+                    }
+                }
+                catch (FormatException e)
+                {
+                    Console.WriteLine("This RANK command isn't correct.");
+                }
+            };
+
+            public static readonly CommandAction DEFEXRANK = (model, arg) =>
+            {
+                try
+                {
+                    int.TryParse(arg, out int rank);
+                    if (rank >= 1)
+                    {
+                        model.SetJudgeRank(rank);
+                        model.SetJudgeRankType(BMSModelDefine.JudgeRankType.BMS_DEFEXRANK);
+                    }
+                    else
+                    {
+                        Console.WriteLine("This DEFEXRANK command isn't correct.");
+                    }
+                }
+                catch (FormatException e)
+                {
+                    Console.WriteLine("This DEFEXRANK command isn't correct.");
+                }
+            };
+
+            public static readonly CommandAction TOTAL = (model, arg) =>
+            {
+                try
+                {
+                    double.TryParse(arg, out double total);
+                    if (total > 0)
+                    {
+                        model.SetTotal(total);
+                        model.SetTotalType(BMSModelDefine.TotalType.BMS);
+                    }
+                    else
+                    {
+                        Console.WriteLine("This TOTAL command isn't correct.");
+                    }
+                }
+                catch (FormatException e)
+                {
+                    Console.WriteLine("This TOTAL command isn't correct.");
+                }
+            };
+
+            public static readonly CommandAction VOLWAV = (model, arg) =>
+            {
+                try
+                {
+                    int.TryParse(arg, out int volwav);
+                    model.SetVolWav(volwav);
+                }
+                catch (FormatException e)
+
+                {
+                    Console.WriteLine("this VOLWAV command isn't correct.");
+                }
+            };
+
+            public static readonly CommandAction STAGEFILE = (model, arg) =>
+            {
+                model.SetStageFile(arg.Replace('\\', '/'));
+            };
+
+            public static readonly CommandAction BACKBMP = (model, arg) =>
+            {
+                model.SetBackBmp(arg.Replace('\\', '/'));
+            };
+
+            public static readonly CommandAction PREVIEW = (model, arg) =>
+            {
+                model.SetPreview(arg.Replace('\\', '/'));
+            };
+
+            public static readonly CommandAction LNOBJ = (model, arg) =>
+            {
+                try
+                {
+                    if (model.BaseType == 62)
+                    {
+                        model.SetLnobj(ParseInt62(arg, 0));
+                    }
+                    else
+                    {
+                        model.SetLnobj(ParseInt36(arg, 0));
+                    }
+                }
+                catch (FormatException e)
+                {
+                    Console.WriteLine("This LNOBJ command isn't correct.");
+                }
+            };
+
+            public static readonly CommandAction LNMODE = (model, arg) =>
+            {
+                try
+                {
+                    int.TryParse(arg, out int lnMode);
+                    if (lnMode < 0 || lnMode > 3)
+                    {
+                        Console.WriteLine("This LNMODE command isn't correct.");
+                        return;
+                    }
+                    model.SetLnMode(lnMode);
+                }
+                catch (FormatException e)
+                {
+                    Console.WriteLine("This LNMODE command isn't correct.");
+                }
+            };
+
+            public static readonly CommandAction DIFFICULTY = (model, arg) =>
+            {
+                try
+                {
+                    int.TryParse(arg, out int difficulty);
+                    model.SetDifficulty(difficulty);
+                }
+                catch (FormatException e)
+                {
+                    Console.WriteLine("This DIFFICULTY command isn't correct");
+                }
+            };
+
+            public static readonly CommandAction BANNER = (model, arg) =>
+            {
+                model.SetBanner(arg.Replace('\\', '/'));
+            };
+
+            public static readonly CommandAction BASE = (model, arg) =>
+            {
+                try
+                {
+                    int.TryParse(arg, out int baseType);
+                    if (baseType != 62)
+                    {
+                        Console.WriteLine("This BASE command isn't correct.");
+                        return;
+                    }
+                    model.SetBaseType(baseType);
+                }
+                catch (FormatException e)
+                {
+                    Console.WriteLine("This BASE command isn't correct.");
+                }
             };
         }
     }

@@ -8,40 +8,53 @@
             CHARGENOTE,
             HELL_CHARGENOTE
         }
+
+        public enum JudgeRankType
+        {
+            BMS_RANK, 
+            BMS_DEFEXRANK, 
+            BMSON_JUDGERANK
+        }
+
+        public enum TotalType
+        {
+            BMS, 
+            BMSON
+        }
     }
 
     public class BMSModel
     {
         public int Player { get; private set; }
-        public Mode Mode { get; private set; } // Mode는 class임.
-        public string Title { get; private set; }
-        public string Subtitle { get; private set; }
-        public string Genre { get; private set; }
-        public string Artist { get; private set; }
-        public string Subartist { get; private set; }
-        public string Banner { get; private set; }
-        public string StageFile { get; private set; }
-        public string BackBmp { get; private set; }
-        public string Preview { get; private set; }
+        public Mode Mode { get; private set; }
+        public string Title { get; private set; } = "";
+        public string Subtitle { get; private set; } = "";
+        public string Genre { get; private set; } = "";
+        public string Artist { get; private set; } = "";
+        public string Subartist { get; private set; } = "";
+        public string Banner { get; private set; } = "";
+        public string StageFile { get; private set; } = "";
+        public string BackBmp { get; private set; } = "";
+        public string Preview { get; private set; } = "";
         public double Bpm { get; private set; }
 
-        public string PlayLevel { get; private set; }
+        public string PlayLevel { get; private set; } = "";
         public int Difficulty { get; private set; }
         public int JudgeRank { get; private set; }
-        public int JudgeRankType { get; private set; } // enum추가해야됨
-        public int Total { get; private set; }
-        public int TotalType { get; private set; } // enum  추가해야됨
+        public BMSModelDefine.JudgeRankType JudgeRankType { get; private set; }
+        public double Total { get; private set; } = 100;
+        public BMSModelDefine.TotalType TotalType { get; private set; }
         public int VolWav { get; private set; }
 
-        public string MD5 { get; private set; }
-        public string SHA256 { get; private set; }
+        public string MD5 { get; private set; } = "";
+        public string SHA256 { get; private set; } = "";
         public string[] WavMap { get; private set; }
         public string[] BgaMap { get; private set; }
 
-        public int BaseType { get; private set; }
+        public int BaseType { get; private set; } = 36;
 
-        public int LnType { get; private set; }
-        public int Lnobj { get; private set; }
+        public int LnMode { get; private set; }
+        public int Lnobj { get; private set; } = -1;
 
         // 타임라인 관련
 
@@ -62,9 +75,9 @@
         public void SetPlayLevel(string playLevel) => PlayLevel = playLevel;
         public void SetDifficulty(int difficulty) => Difficulty = difficulty;
         public void SetJudgeRank(int judgeRank) => JudgeRank = judgeRank;
-        public void SetJudgeRankType(int judgeRankType) => JudgeRankType = judgeRankType;
-        public void SetTotal(int total) => Total = total;
-        public void SetTotalType(int totalType) => TotalType = totalType;
+        public void SetJudgeRankType(BMSModelDefine.JudgeRankType judgeRankType) => JudgeRankType = judgeRankType;
+        public void SetTotal(double total) => Total = total;
+        public void SetTotalType(BMSModelDefine.TotalType totalType) => TotalType = totalType;
         public void SetVolWav(int volWav) => VolWav = volWav;
         
         public void SetMD5(string md5) => MD5 = md5;
@@ -73,7 +86,7 @@
         public void SetBgaMap(string[] bgaMap) => BgaMap = bgaMap;
         
         public void SetBaseType(int baseType) => BaseType = baseType;
-        public void SetLnType(int lnType) => LnType = lnType;
+        public void SetLnMode(int lnMode) => LnMode = lnMode;
         public void SetLnobj(int lnobj) => Lnobj = lnobj;
     }
 }
