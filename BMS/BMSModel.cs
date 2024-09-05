@@ -4,6 +4,7 @@
     {
         public enum LNTYPE
         {
+            UNDEFINED,
             LONGNOTE,
             CHARGENOTE,
             HELL_CHARGENOTE

@@ -10,7 +10,13 @@
         public long Duration { get; private set; }
         public int State { get; private set; }
         public long PlayTime { get; private set; }
-        public List<Note> LayeredNotes { get; private set; } = [];
+        private Note[] layeredNotes = [];
+        public Note[] LayeredNotes {
+            get 
+            {
+                return layeredNotes;
+            }
+        }
 
         public void SetSection(double section) => Section = section;
         public void SetWav(int wav) => Wav = wav;
@@ -26,7 +32,8 @@
                 return;
             n.SetSection(Section);
             n.SetTime(Time);
-            LayeredNotes.Add(n);
+            Array.Resize(ref layeredNotes, layeredNotes.Length + 1);
+            layeredNotes[layeredNotes.Length - 1] = n;
         }
 
         public object Clone()
