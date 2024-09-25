@@ -54,7 +54,7 @@
 
         public int BaseType { get; private set; } = 36;
 
-        public int LnMode { get; private set; }
+        public BMSModelDefine.LNTYPE LnMode { get; private set; }
         public int Lnobj { get; private set; } = -1;
 
         // 타임라인 관련
@@ -87,7 +87,7 @@
         public void SetBgaMap(string[] bgaMap) => BgaMap = bgaMap;
         
         public void SetBaseType(int baseType) => BaseType = baseType;
-        public void SetLnMode(int lnMode) => LnMode = lnMode;
+        public void SetLnMode(BMSModelDefine.LNTYPE lnMode) => LnMode = lnMode;
         public void SetLnobj(int lnobj) => Lnobj = lnobj;
     }
 }

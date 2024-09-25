@@ -107,6 +107,16 @@
             return false;
         }
 
+        public bool ExistNote(int lane)
+        {
+            return notes[lane] != null;
+        }
+
+        public Note GetNote(int lane)
+        {
+            return notes[lane];
+        }
+
         public void SetNote(int lane, Note note)
         {
             notes[lane] = note;
@@ -168,6 +178,16 @@
         public void SetBga(int bga)
         {
             Bga = bga;
+        }
+
+        public void SetBpm(double bpm)
+        {
+            Bpm = bpm;
+        }
+
+        public void SetSectionLine(bool section)
+        {
+            SectionLine = section;
         }
 
         public void SetLayer(int layer)

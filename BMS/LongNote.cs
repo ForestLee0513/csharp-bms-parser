@@ -24,6 +24,11 @@
             Type = pair.Type = (Type != BMSModelDefine.LNTYPE.UNDEFINED ? Type : pair.Type);
         }
 
+        public void SetType(BMSModelDefine.LNTYPE lnType)
+        {
+            Type = lnType;
+        }
+
         public new object Clone()
         {
             return Clone(true);

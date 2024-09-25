@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Runtime.ConstrainedExecution;
+using System.Text;
 
 namespace BMS
 {
@@ -160,6 +161,18 @@ namespace BMS
             }
 
             return sb.ToString();
+        }
+    }
+
+    public class TimelineCache
+    {
+        public double time;
+        public Timeline timeline;
+
+        public TimelineCache(double time, Timeline timeline)
+        {
+            this.time = time;
+            this.timeline = timeline;
         }
     }
 }

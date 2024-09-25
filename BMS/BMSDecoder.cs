@@ -551,7 +551,7 @@ namespace BMS
                         Console.WriteLine("This LNMODE command isn't correct.");
                         return;
                     }
-                    model.SetLnMode(lnMode);
+                    model.SetLnMode((BMSModelDefine.LNTYPE)lnMode);
                 }
                 catch (FormatException e)
                 {
