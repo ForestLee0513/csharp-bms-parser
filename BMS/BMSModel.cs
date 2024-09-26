@@ -58,6 +58,20 @@
         public int Lnobj { get; private set; } = -1;
 
         // 타임라인 관련
+        public Timeline[] timelines { get; private set; }
+        public ChartInformation info { get; private set; }
+        public Dictionary<string, string> values { get; private set; }
+
+        // Set timelines
+        public void SetAllTimelines(Timeline[] newTimelines)
+        {
+            timelines = newTimelines;
+        }
+
+        public void SetChartInformation(ChartInformation newInfo)
+        {
+            info = newInfo;
+        }
 
         // set methods
         public void SetPlayer(int player) => Player = player;

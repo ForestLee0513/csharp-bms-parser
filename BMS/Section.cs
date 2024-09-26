@@ -66,6 +66,9 @@ namespace BMS
 
             foreach (string line in lines)
             {
+                if (line == null)
+                    continue;
+
                 int channel = ChartDecoder.ParseInt36(line[4], line[5]);
                 switch (channel)
                 {
@@ -316,6 +319,9 @@ namespace BMS
             // NOTES //
             foreach (string line in channelLines)
             {
+                if (line == null)
+                    continue;
+
                 int channel = ChartDecoder.ParseInt36(line[4], line[5]);
                 int tmpkey = 0;
                 if (channel >= (int)SectionDefine.Channels.P1_KEY_BASE && channel < (int)SectionDefine.Channels.P1_KEY_BASE + 9)
@@ -330,33 +336,33 @@ namespace BMS
                 }
                 else if (channel >= (int)SectionDefine.Channels.P1_INVISIBLE_KEY_BASE && channel < (int)SectionDefine.Channels.P1_INVISIBLE_KEY_BASE + 9)
                 {
-                    tmpkey = cassign[channel - (int)SectionDefine.Channels.P1_INVISIBLE_KEY_BASE + 9];
+                    tmpkey = cassign[channel - (int)SectionDefine.Channels.P1_INVISIBLE_KEY_BASE];
                     channel = (int)SectionDefine.Channels.P1_INVISIBLE_KEY_BASE;
                 }
                 else if (channel >= (int)SectionDefine.Channels.P2_INVISIBLE_KEY_BASE && channel < (int)SectionDefine.Channels.P2_INVISIBLE_KEY_BASE + 9)
                 {
                     tmpkey = cassign[channel - (int)SectionDefine.Channels.P2_INVISIBLE_KEY_BASE + 9];
-                    channel = (int)SectionDefine.Channels.P2_INVISIBLE_KEY_BASE;
+                    channel = (int)SectionDefine.Channels.P1_INVISIBLE_KEY_BASE;
                 }
                 else if (channel >= (int)SectionDefine.Channels.P1_LONG_KEY_BASE && channel < (int)SectionDefine.Channels.P1_LONG_KEY_BASE + 9)
                 {
-                    tmpkey = cassign[channel - (int)SectionDefine.Channels.P1_LONG_KEY_BASE + 9];
+                    tmpkey = cassign[channel - (int)SectionDefine.Channels.P1_LONG_KEY_BASE];
                     channel = (int)SectionDefine.Channels.P1_LONG_KEY_BASE;
                 }
                 else if (channel >= (int)SectionDefine.Channels.P2_LONG_KEY_BASE && channel < (int)SectionDefine.Channels.P2_LONG_KEY_BASE + 9)
                 {
                     tmpkey = cassign[channel - (int)SectionDefine.Channels.P2_LONG_KEY_BASE + 9];
-                    channel = (int)SectionDefine.Channels.P2_LONG_KEY_BASE;
+                    channel = (int)SectionDefine.Channels.P1_LONG_KEY_BASE;
                 }
                 else if (channel >= (int)SectionDefine.Channels.P1_MINE_KEY_BASE && channel < (int)SectionDefine.Channels.P1_MINE_KEY_BASE + 9)
                 {
-                    tmpkey = cassign[channel - (int)SectionDefine.Channels.P1_MINE_KEY_BASE + 9];
+                    tmpkey = cassign[channel - (int)SectionDefine.Channels.P1_MINE_KEY_BASE];
                     channel = (int)SectionDefine.Channels.P1_MINE_KEY_BASE;
                 }
                 else if (channel >= (int)SectionDefine.Channels.P2_MINE_KEY_BASE && channel < (int)SectionDefine.Channels.P2_MINE_KEY_BASE + 9)
                 {
                     tmpkey = cassign[channel - (int)SectionDefine.Channels.P2_MINE_KEY_BASE + 9];
-                    channel = (int)SectionDefine.Channels.P2_MINE_KEY_BASE;
+                    channel = (int)SectionDefine.Channels.P1_MINE_KEY_BASE;
                 }
 
                 int key = tmpkey;
@@ -440,7 +446,7 @@ namespace BMS
                                 double section = tl.Section;
                                 foreach (LongNote ln in lnList[key])
                                 {
-                                    if (ln.Section <=  section && section <= ln.Pair.Section)
+                                    if (ln.Section <= section && section <= ln.Pair.Section)
                                     {
                                         insideLn = true;
                                         break;
@@ -480,6 +486,7 @@ namespace BMS
                                             ((LongNote)note).SetType(lnmode);
                                             LongNote noteEnd = new LongNote(startLn[key].Wav != wavMap[data] ? wavMap[data] : -2);
                                             tl.SetNote(key, noteEnd);
+                                            ((LongNote)note).SetPair(noteEnd);
                                             if (lnList[key] == null)
                                                 lnList[key] = new();
                                             lnList[key].Add((LongNote)note);

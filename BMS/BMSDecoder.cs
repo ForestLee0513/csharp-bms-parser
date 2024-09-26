@@ -360,6 +360,69 @@ namespace BMS
             model.SetBgaMap(bgaList);
             #endregion
 
+            #region Section
+            Section prev = null;
+            Section[] sections = new Section[maxsec + 1];
+            for (int i = 0; i <= maxsec; i++)
+            {
+                sections[i] = new Section(model, prev, lines[i] != null ? lines[i] : [], bpmTable, stopTable, scrollTable);
+                prev = sections[i];
+            }
+
+            SortedDictionary<double, TimelineCache> timelines = new();
+            List<LongNote>[] lnList = new List<LongNote>[model.Mode.Key];
+            LongNote[] lnEndStatus = new LongNote[model.Mode.Key];
+            Timeline baseTl = new Timeline(0, 0, model.Mode.Key);
+            baseTl.SetBpm(model.Bpm);
+            timelines.Add(0.0, new TimelineCache(0.0, baseTl));
+            foreach (Section section in sections)
+            {
+                section.MakeTimelines(wm, bm, timelines, lnList, lnEndStatus);
+            }
+
+            Timeline[] tl = new Timeline[timelines.Count];
+            int tlCount = 0;
+            foreach (TimelineCache tlc in timelines.Values)
+            {
+                tl[tlCount] = tlc.timeline;
+                tlCount++;
+            }
+            model.SetAllTimelines(tl);
+
+            if (tl[0].Bpm == 0)
+            {
+                Console.WriteLine("bpm is cannot set to 0");
+                return null;
+            }
+
+            for (int i = 0; i < lnEndStatus.Length; i++)
+            {
+                if (lnEndStatus[i] != null)
+                {
+                    if (lnEndStatus[i].Section != double.MinValue)
+                    {
+                        if (timelines.TryGetValue(lnEndStatus[i].Section, out var lnEndTl))
+                        {
+                            lnEndTl.timeline.SetNote(i, null);
+                        }
+                    }
+                }
+            }
+
+            if (model.TotalType != BMSModelDefine.TotalType.BMS)
+                Console.WriteLine("TOTAL value is not defined.");
+
+            if (model.Total <= 60)
+                Console.WriteLine("TOTAL value is too small.");
+            //if (tl.Length > 0)
+            //{
+            //    if (tl[tl.Length - 1].Time >= model)
+            //}
+
+            model.SetChartInformation(new ChartInformation(path, lnType, selectedRandom));
+
+            #endregion
+
             return model;
         }
         
