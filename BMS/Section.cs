@@ -275,9 +275,9 @@ namespace BMS
                 for (int i = 0; i < poor.Length; i++)
                 {
                     if (bgaMap[poor[i]] != -2)
-                        poors[i] = new Layer.Sequence((long)(i * poorTime / poor.Length), bgaMap[poor[i]]);
+                        poors[i] = new Layer.Sequence((i * poorTime / poor.Length), bgaMap[poor[i]]);
                     else
-                        poors[i] = new Layer.Sequence((long)(i * poorTime / poor.Length), -1);
+                        poors[i] = new Layer.Sequence((i * poorTime / poor.Length), -1);
                 }
 
                 poors[poors.Length - 1] = new Layer.Sequence(poorTime);
@@ -311,7 +311,7 @@ namespace BMS
                 else if (st <= 1)
                 {
                     Timeline tl = GetTimeline(sectionNum + ste.Value.Value * rate);
-                    tl.SetStop((long)(1000.0 * 60 * 4 * ste.Value.Value / (tl.Bpm)));
+                    tl.SetStop(1000.0 * 60 * 4 * ste.Value.Value / (tl.Bpm));
                     ste = stops.MoveNext() ? stops.Current : null;
                 }
             }
@@ -531,6 +531,52 @@ namespace BMS
                             }
                         });
                         break;
+                    case (int)SectionDefine.Channels.P1_MINE_KEY_BASE:
+                        ProcessData(line, (pos, data) =>
+                        {
+                            Timeline tl = GetTimeline(sectionNum + rate * pos);
+                            bool insideLn = tl.ExistNote(key);
+                            if (!insideLn && lnList[key] != null)
+                            {
+                                foreach (LongNote ln in lnList[key])
+                                {
+                                    insideLn = true;
+                                    break;
+                                }
+                            }
+
+                            if (!insideLn)
+                            {
+                                if (baseType == 62)
+                                {
+                                    data = ChartDecoder.ParseInt36(ChartDecoder.ToBase62(data), 0);
+                                }
+                                tl.SetNote(key, new MineNote(wavMap[0], data));
+                            }
+                            else
+                            {
+                                Console.WriteLine($"We got a conflict while adding mine notes. at {key + 1} : {tl.Time}");
+                            }
+                        });
+                        break;
+                    case (int)SectionDefine.Channels.LANE_AUTOPLAY:
+                        ProcessData(line, (pos, data) =>
+                        {
+                            GetTimeline(sectionNum + rate * pos).AddBackgroundNote(new NormalNote(wavMap[(int)data]));
+                        });
+                        break;
+                    case (int)SectionDefine.Channels.BGA_PLAY:
+                        ProcessData(line, (pos, data) =>
+                        {
+                            GetTimeline(sectionNum + rate * pos).SetBga(bgaMap[data]);
+                        });
+                        break;
+                    case (int)SectionDefine.Channels.LAYER_PLAY:
+                        ProcessData(line, (pos, data) =>
+                        {
+                            GetTimeline(sectionNum + rate * pos).SetLayer(bgaMap[data]);
+                        });
+                        break;
                 }
             }
         }
@@ -552,7 +598,7 @@ namespace BMS
             double bpm = le.Value.timeline.Bpm;
             double time = le.Value.timeline.Stop + (240000.0 * (section - le.Key)) / bpm;
 
-            Timeline tl = new Timeline(section, (long)time, model.Mode.Key);
+            Timeline tl = new Timeline(section, time, model.Mode.Key);
             tl.SetBpm(bpm);
             tl.SetScroll(scroll);
             tlCache[section] = new TimelineCache(time, tl);

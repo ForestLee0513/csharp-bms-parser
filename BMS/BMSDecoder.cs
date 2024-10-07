@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Net.WebSockets;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -414,10 +415,10 @@ namespace BMS
 
             if (model.Total <= 60)
                 Console.WriteLine("TOTAL value is too small.");
-            //if (tl.Length > 0)
-            //{
-            //    if (tl[tl.Length - 1].Time >= model)
-            //}
+            if (tl.Length > 0)
+            {
+                //if (tl[tl.Length - 1].Time >= model)
+            }
 
             model.SetChartInformation(new ChartInformation(path, lnType, selectedRandom));
 

@@ -33,16 +33,16 @@
         public class Sequence
         {
             public static readonly int END = int.MinValue;
-            public readonly long time;
+            public readonly double time;
             public readonly int id;
             
-            public Sequence(long time)
+            public Sequence(double time)
             {
                 this.time = time;
                 id = END;
             }
 
-            public Sequence(long time, int id)
+            public Sequence(double time, int id)
             {
                 this.time = time;
                 this.id = id;

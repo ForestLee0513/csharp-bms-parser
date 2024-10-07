@@ -2,7 +2,7 @@
 {
     public class Timeline
     {
-        public long Time { get; private set; }
+        public double Time { get; private set; }
         public double Section { get; private set; }
         private Note[] notes = [];
         public Note[] Notes
@@ -30,13 +30,13 @@
         }
         public bool SectionLine { get; private set; } = false;
         public double Bpm { get; private set; }
-        public long Stop { get; private set; }
+        public double Stop { get; private set; }
         public double Scroll { get; private set; }
         public int Bga { get; private set; } = -1;
         public int Layer { get; private set; } = -1;
         public Layer[] EventLayer { get; private set; } = [];
 
-        public Timeline(double section, long time, int noteSize)
+        public Timeline(double section, double time, int noteSize)
         {
             Section = section;
             Time = time;
@@ -44,7 +44,7 @@
             hiddenNotes = new Note[noteSize];
         }
 
-        public void SetTime(long time)
+        public void SetTime(double time)
         {
             Time = time;
             foreach (Note n in notes)
@@ -220,7 +220,7 @@
             Section = section;
         }
 
-        public void SetStop(long stop)
+        public void SetStop(double stop)
         {
             Stop = stop;
         }

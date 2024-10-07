@@ -7,7 +7,7 @@
         public BMSModelDefine.LNTYPE Type { get; private set; }
 
         public LongNote(int wav) => SetWav(wav);
-        public LongNote(int wav, long startTime, long duration)
+        public LongNote(int wav, double startTime, double duration)
         {
             SetWav(wav);
             SetStartTime(startTime);

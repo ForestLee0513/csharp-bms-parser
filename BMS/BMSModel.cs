@@ -57,23 +57,16 @@
         public BMSModelDefine.LNTYPE LnMode { get; private set; }
         public int Lnobj { get; private set; } = -1;
 
+
         // 타임라인 관련
-        public Timeline[] timelines { get; private set; }
-        public ChartInformation info { get; private set; }
-        public Dictionary<string, string> values { get; private set; }
+        public Timeline[] Timelines { get; private set; }
+        public ChartInformation Info { get; private set; }
+        public Dictionary<string, string> Values { get; private set; }
 
-        // Set timelines
-        public void SetAllTimelines(Timeline[] newTimelines)
-        {
-            timelines = newTimelines;
-        }
+        public void SetAllTimelines(Timeline[] timelines) => Timelines = timelines;
+        public void SetChartInformation(ChartInformation info) => Info = info;
+        
 
-        public void SetChartInformation(ChartInformation newInfo)
-        {
-            info = newInfo;
-        }
-
-        // set methods
         public void SetPlayer(int player) => Player = player;
         public void SetMode(Mode mode) => Mode = mode;
         public void SetTitle(string title) => Title = title;

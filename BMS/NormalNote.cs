@@ -7,7 +7,7 @@
             SetWav(wav);
         }
 
-        public NormalNote(int wav, long start, long duration)
+        public NormalNote(int wav, double start, double duration)
         {
             SetWav(wav);
             SetStartTime(start);
