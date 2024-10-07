@@ -1,10 +1,12 @@
-﻿namespace BMS
+﻿using System;
+
+namespace BMS
 {
     public class Timeline
     {
         public double Time { get; private set; }
         public double Section { get; private set; }
-        private Note[] notes = [];
+        private Note[] notes = new Note[0];
         public Note[] Notes
         {
             get
@@ -12,7 +14,7 @@
                 return notes;
             }
         }
-        private Note[] hiddenNotes = [];
+        private Note[] hiddenNotes = new Note[0];
         public Note[] HiddenNotes
         {
             get
@@ -20,7 +22,7 @@
                 return hiddenNotes;
             }
         }
-        private Note[] bgNotes = [];
+        private Note[] bgNotes = new Note[0];
         public Note[] BgNotes
         {
             get
@@ -34,7 +36,7 @@
         public double Scroll { get; private set; }
         public int Bga { get; private set; } = -1;
         public int Layer { get; private set; } = -1;
-        public Layer[] EventLayer { get; private set; } = [];
+        public Layer[] EventLayer { get; private set; } = new Layer[0];
 
         public Timeline(double section, double time, int noteSize)
         {

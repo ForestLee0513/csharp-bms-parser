@@ -1,6 +1,6 @@
-﻿using System.Runtime.CompilerServices;
-using System.Xml;
-using System.Xml.Schema;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using static BMS.Layer;
 
 namespace BMS
@@ -46,8 +46,8 @@ namespace BMS
 
     public class Section
     {
-        public double rate { get; private set; } = 1.0;
-        public int[] poor { get; private set; } = [];
+        public double Rate { get; private set; } = 1.0;
+        public int[] Poor { get; private set; } = new int[0];
         private readonly BMSModel model;
         private readonly double sectionNum;
         // Decode Log에 관련된 리스트도 추가해야하지만 아직 구현하지 않아 이후 구현예정
@@ -60,7 +60,7 @@ namespace BMS
 
             channelLines = new List<string>(new string[lines.Count]);
             if (prev != null)
-                sectionNum = prev.sectionNum + prev.rate;
+                sectionNum = prev.sectionNum + prev.Rate;
             else
                 sectionNum = 0;
 
@@ -84,7 +84,7 @@ namespace BMS
                         int colonIndex = line.IndexOf(":");
                         try
                         {
-                            rate = Convert.ToDouble(line.Substring(colonIndex + 1));
+                            Rate = Convert.ToDouble(line.Substring(colonIndex + 1));
                         }
                         catch (FormatException e)
                         {
@@ -94,9 +94,9 @@ namespace BMS
                     case (int)SectionDefine.Channels.BPM_CHANGE:
                         break;
                     case (int)SectionDefine.Channels.POOR_PLAY:
-                        poor = SplitData(line);
+                        Poor = SplitData(line);
                         int singleId = 0;
-                        foreach (int id in poor)
+                        foreach (int id in Poor)
                         {
                             if (id != 0)
                             {
@@ -112,7 +112,7 @@ namespace BMS
                             }
                         }
                         if (singleId != -1)
-                            poor = [singleId];
+                            Poor = new int[] { singleId };
                         break;
                     case (int)SectionDefine.Channels.BPM_CHANGE_EXTEND:
                         ProcessData(line, (pos, data) =>
@@ -244,13 +244,13 @@ namespace BMS
             }
         }
 
-        private readonly Dictionary<double, double> bpmChange = new();
-        private readonly Dictionary<double, double> stop = new();
-        private readonly Dictionary<double, double> scroll = new();
+        private readonly Dictionary<double, double> bpmChange = new Dictionary<double, double>();
+        private readonly Dictionary<double, double> stop = new Dictionary<double, double>();
+        private readonly Dictionary<double, double> scroll = new Dictionary<double, double>();
 
-        private static readonly int[] CHANNELASSIGN_BEAT5 = [0, 1, 2, 3, 4, 5, -1, -1, -1, 6, 7, 8, 9, 10, 11, -1, -1, -1];
-        private static readonly int[] CHANNELASSIGN_BEAT7 = [0, 1, 2, 3, 4, 7, -1, 5, 6, 8, 9, 10, 11, 12, 15, -1, 13, 14];
-        private static readonly int[] CHANNELASSIGN_POPN = [0, 1, 2, 3, 4, -1, -1, -1, -1, -1, 5, 6, 7, 8, -1, -1, -1, -1];
+        private static readonly int[] CHANNELASSIGN_BEAT5 = new int[] { 0, 1, 2, 3, 4, 5, -1, -1, -1, 6, 7, 8, 9, 10, 11, -1, -1, -1 };
+        private static readonly int[] CHANNELASSIGN_BEAT7 = new int[] { 0, 1, 2, 3, 4, 7, -1, 5, 6, 8, 9, 10, 11, 12, 15, -1, 13, 14 };
+        private static readonly int[] CHANNELASSIGN_POPN = new int[] { 0, 1, 2, 3, 4, -1, -1, -1, -1, -1, 5, 6, 7, 8, -1, -1, -1, -1 };
 
         private SortedDictionary<double, TimelineCache> tlCache;
 
@@ -267,52 +267,54 @@ namespace BMS
             baseTl.SetSectionLine(true);
 
             // Poor //
-            if (poor.Length > 0)
+            if (Poor.Length > 0)
             {
-                Layer.Sequence[] poors = new Layer.Sequence[poor.Length + 1];
-                int poorTime = 500;
+                Layer.Sequence[] Poors = new Layer.Sequence[Poor.Length + 1];
+                int PoorTime = 500;
 
-                for (int i = 0; i < poor.Length; i++)
+                for (int i = 0; i < Poor.Length; i++)
                 {
-                    if (bgaMap[poor[i]] != -2)
-                        poors[i] = new Layer.Sequence((i * poorTime / poor.Length), bgaMap[poor[i]]);
+                    if (bgaMap[Poor[i]] != -2)
+                        Poors[i] = new Layer.Sequence((i * PoorTime / Poor.Length), bgaMap[Poor[i]]);
                     else
-                        poors[i] = new Layer.Sequence((i * poorTime / poor.Length), -1);
+                        Poors[i] = new Layer.Sequence((i * PoorTime / Poor.Length), -1);
                 }
 
-                poors[poors.Length - 1] = new Layer.Sequence(poorTime);
-                baseTl.SetEventLayer(new Layer[] { new Layer(new Layer.Event(EventType.MISS, 1), new Layer.Sequence[][] { poors }) });
+                Poors[Poors.Length - 1] = new Layer.Sequence(PoorTime);
+                baseTl.SetEventLayer(new Layer[] { new Layer(new Layer.Event(EventType.MISS, 1), new Layer.Sequence[][] { Poors }) });
             }
 
             // BGA //
             IEnumerator<KeyValuePair<double, double>> stops = stop.GetEnumerator();
-            KeyValuePair<double, double>? ste = stops.MoveNext() ? stops.Current : null;
-            IEnumerator<KeyValuePair<double, double>> bpms = bpmChange.GetEnumerator();
-            KeyValuePair<double, double>? bce = bpms.MoveNext() ? bpms.Current : null;
-            IEnumerator<KeyValuePair<double, double>> scrolls = scroll.GetEnumerator();
-            KeyValuePair<double, double>? sce = scrolls.MoveNext() ? scrolls.Current : null;
+            KeyValuePair<double, double>? ste = stops.MoveNext() ? stops.Current : (KeyValuePair<double, double>?)null;
 
-            while (ste != null || bce != null || sce != null)
+            IEnumerator<KeyValuePair<double, double>> bpms = bpmChange.GetEnumerator();
+            KeyValuePair<double, double>? bce = bpms.MoveNext() ? bpms.Current : (KeyValuePair<double, double>?)null;
+
+            IEnumerator<KeyValuePair<double, double>> scrolls = scroll.GetEnumerator();
+            KeyValuePair<double, double>? sce = scrolls.MoveNext() ? scrolls.Current : (KeyValuePair<double, double>?)null;
+
+            while (ste.HasValue || bce.HasValue || sce.HasValue)
             {
-                double bc = bce != null ? bce.Value.Key : 2;
-                double st = ste != null ? ste.Value.Key : 2;
-                double sc = sce != null ? sce.Value.Key : 2;
+                double bc = bce.HasValue ? bce.Value.Key : 2;
+                double st = ste.HasValue ? ste.Value.Key : 2;
+                double sc = sce.HasValue ? sce.Value.Key : 2;
 
                 if (sc <= st && sc <= bc)
                 {
-                    GetTimeline(sectionNum + sc * rate).SetScroll(sce.Value.Value);
-                    sce = scrolls.MoveNext() ? scrolls.Current : null;
+                    GetTimeline(sectionNum + sc * Rate).SetScroll(sce.Value.Value);
+                    sce = scrolls.MoveNext() ? scrolls.Current : (KeyValuePair<double, double>?)null;
                 }
                 else if (bc <= st)
                 {
-                    GetTimeline(sectionNum + bc * rate).SetScroll(bce.Value.Value);
-                    bce = bpms.MoveNext() ? bpms.Current : null;
+                    GetTimeline(sectionNum + bc * Rate).SetBpm(bce.Value.Value);
+                    bce = bpms.MoveNext() ? bpms.Current : (KeyValuePair<double, double>?)null;
                 }
                 else if (st <= 1)
                 {
-                    Timeline tl = GetTimeline(sectionNum + ste.Value.Value * rate);
-                    tl.SetStop(1000.0 * 60 * 4 * ste.Value.Value / (tl.Bpm));
-                    ste = stops.MoveNext() ? stops.Current : null;
+                    Timeline tl = GetTimeline(sectionNum + ste.Value.Key * Rate);
+                    tl.SetStop(1000.0 * 60 * 4 * ste.Value.Value / tl.Bpm);
+                    ste = stops.MoveNext() ? stops.Current : (KeyValuePair<double, double>?)null;
                 }
             }
 
@@ -373,7 +375,7 @@ namespace BMS
                     case (int)SectionDefine.Channels.P1_KEY_BASE:
                         ProcessData(line, (pos, data) =>
                         {
-                            Timeline tl = GetTimeline(sectionNum + rate * pos);
+                            Timeline tl = GetTimeline(sectionNum + Rate * pos);
                             if (tl.ExistNote(key))
                             {
                                 Console.WriteLine($"Conflict to adding notes at {key + 1} : {tl.Time}");
@@ -399,7 +401,7 @@ namespace BMS
                                             ln.SetPair(lnEnd);
 
                                             if (lnList[key] == null)
-                                                lnList[key] = [];
+                                                lnList[key] = new List<LongNote>();
                                             lnList[key].Add(ln);
                                             break;
                                         } else if (note is LongNote && ((LongNote)note).Pair == null)
@@ -410,7 +412,7 @@ namespace BMS
                                             ((LongNote)note).SetPair(lnEnd);
 
                                             if (lnList[key] == null)
-                                                lnList[key] = [];
+                                                lnList[key] = new List<LongNote>();
 
                                             lnList[key].Add((LongNote)note);
                                             startLn[key] = null;
@@ -433,13 +435,13 @@ namespace BMS
                     case (int)SectionDefine.Channels.P1_INVISIBLE_KEY_BASE:
                         ProcessData(line, (pos, data) => 
                         {
-                            GetTimeline(sectionNum + rate * pos).SetHiddenNote(key, new NormalNote(wavMap[data]));
+                            GetTimeline(sectionNum + Rate * pos).SetHiddenNote(key, new NormalNote(wavMap[data]));
                         });
                         break;
                     case (int)SectionDefine.Channels.P1_LONG_KEY_BASE:
                         ProcessData(line, (pos, data) => 
                         {
-                            Timeline tl = GetTimeline(sectionNum + rate * pos);
+                            Timeline tl = GetTimeline(sectionNum + Rate * pos);
                             bool insideLn = false;
                             if (!insideLn && lnList[key] != null)
                             {
@@ -488,7 +490,7 @@ namespace BMS
                                             tl.SetNote(key, noteEnd);
                                             ((LongNote)note).SetPair(noteEnd);
                                             if (lnList[key] == null)
-                                                lnList[key] = new();
+                                                lnList[key] = new List<LongNote>();
                                             lnList[key].Add((LongNote)note);
 
                                             startLn[key] = null;
@@ -534,7 +536,7 @@ namespace BMS
                     case (int)SectionDefine.Channels.P1_MINE_KEY_BASE:
                         ProcessData(line, (pos, data) =>
                         {
-                            Timeline tl = GetTimeline(sectionNum + rate * pos);
+                            Timeline tl = GetTimeline(sectionNum + Rate * pos);
                             bool insideLn = tl.ExistNote(key);
                             if (!insideLn && lnList[key] != null)
                             {
@@ -562,19 +564,19 @@ namespace BMS
                     case (int)SectionDefine.Channels.LANE_AUTOPLAY:
                         ProcessData(line, (pos, data) =>
                         {
-                            GetTimeline(sectionNum + rate * pos).AddBackgroundNote(new NormalNote(wavMap[(int)data]));
+                            GetTimeline(sectionNum + Rate * pos).AddBackgroundNote(new NormalNote(wavMap[data]));
                         });
                         break;
                     case (int)SectionDefine.Channels.BGA_PLAY:
                         ProcessData(line, (pos, data) =>
                         {
-                            GetTimeline(sectionNum + rate * pos).SetBga(bgaMap[data]);
+                            GetTimeline(sectionNum + Rate * pos).SetBga(bgaMap[data]);
                         });
                         break;
                     case (int)SectionDefine.Channels.LAYER_PLAY:
                         ProcessData(line, (pos, data) =>
                         {
-                            GetTimeline(sectionNum + rate * pos).SetLayer(bgaMap[data]);
+                            GetTimeline(sectionNum + Rate * pos).SetLayer(bgaMap[data]);
                         });
                         break;
                 }

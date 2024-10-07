@@ -1,4 +1,4 @@
-﻿using System.Runtime.ConstrainedExecution;
+﻿using System;
 using System.Text;
 
 namespace BMS
@@ -9,7 +9,7 @@ namespace BMS
 
         public BMSModel Decode(string path)
         {
-            return Decode(new ChartInformation(path, lnType, []));
+            return Decode(new ChartInformation(path, lnType, new int[0]));
         }
 
         public abstract BMSModel Decode(ChartInformation info);

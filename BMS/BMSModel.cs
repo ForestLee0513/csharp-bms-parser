@@ -1,4 +1,6 @@
-﻿namespace BMS
+﻿using System.Collections.Generic;
+
+namespace BMS
 {
     public static class BMSModelDefine
     {

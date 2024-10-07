@@ -1,4 +1,6 @@
-﻿namespace BMS
+﻿using System;
+
+namespace BMS
 {
     [Serializable]
     public class Note : ICloneable
@@ -10,7 +12,7 @@
         public double Duration { get; private set; }
         public int State { get; private set; }
         public double PlayTime { get; private set; }
-        private Note[] layeredNotes = [];
+        private Note[] layeredNotes = new Note[0];
         public Note[] LayeredNotes {
             get 
             {

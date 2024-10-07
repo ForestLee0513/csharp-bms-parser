@@ -1,4 +1,7 @@
-﻿using System.Net.WebSockets;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
@@ -26,7 +29,7 @@ namespace BMS
         // BMSModel 반환
         public new BMSModel Decode(string path)
         {
-            BMSModel model = Decode(path, File.ReadAllBytes(path), path.ToLower().EndsWith(".pms"), []);
+            BMSModel model = Decode(path, File.ReadAllBytes(path), path.ToLower().EndsWith(".pms"), new int[0]);
 
             return model;
         }
@@ -42,24 +45,24 @@ namespace BMS
             return Decode(null, data, isPms, random);
         }
 
-        private Stack<int> randomStack = new();
-        private Stack<bool> skipStack = new();
+        private Stack<int> randomStack = new Stack<int>();
+        private Stack<bool> skipStack = new Stack<bool>();
 
         private List<string>[] lines = new List<string>[1000];
 
-        private Dictionary<int, double> scrollTable = new();
-        private Dictionary<int, double> stopTable = new();
-        private Dictionary<int, double> bpmTable = new();
+        private Dictionary<int, double> scrollTable = new Dictionary<int, double>();
+        private Dictionary<int, double> stopTable = new Dictionary<int, double>();
+        private Dictionary<int, double> bpmTable = new Dictionary<int, double>();
 
         private BMSModel Decode(string? path, byte[] data, bool isPms, int[] selectedRandom)
         {
             long time = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-            BMSModel model = new();
+            BMSModel model = new BMSModel();
             scrollTable.Clear();
             stopTable.Clear();
             bpmTable.Clear();
 
-            using MemoryStream stream = new(data);
+            using MemoryStream stream = new MemoryStream(data);
 
             #region Hashing
             string md5Hash;
@@ -366,11 +369,11 @@ namespace BMS
             Section[] sections = new Section[maxsec + 1];
             for (int i = 0; i <= maxsec; i++)
             {
-                sections[i] = new Section(model, prev, lines[i] != null ? lines[i] : [], bpmTable, stopTable, scrollTable);
+                sections[i] = new Section(model, prev, lines[i] != null ? lines[i] : new List<string>(), bpmTable, stopTable, scrollTable);
                 prev = sections[i];
             }
 
-            SortedDictionary<double, TimelineCache> timelines = new();
+            SortedDictionary<double, TimelineCache> timelines = new SortedDictionary<double, TimelineCache>();
             List<LongNote>[] lnList = new List<LongNote>[model.Mode.Key];
             LongNote[] lnEndStatus = new LongNote[model.Mode.Key];
             Timeline baseTl = new Timeline(0, 0, model.Mode.Key);
