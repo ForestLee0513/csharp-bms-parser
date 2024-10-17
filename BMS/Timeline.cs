@@ -118,7 +118,6 @@ namespace BMS
         {
             return notes[lane];
         }
-
         public void SetNote(int lane, Note note)
         {
             notes[lane] = note;
@@ -138,7 +137,10 @@ namespace BMS
 
             return false;
         }
-
+        public Note GetHiddenNote(int lane)
+        {
+            return hiddenNotes[lane];
+        }
         public void SetHiddenNote(int lane, Note note)
         {
             hiddenNotes[lane] = note;
@@ -147,7 +149,6 @@ namespace BMS
             note.SetSection(Section);
             note.SetTime(Time);
         }
-
 
         public void AddBackgroundNote(Note note)
         {

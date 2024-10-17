@@ -73,6 +73,47 @@ namespace BMS
             return Info != null ? Info.LnType : BMSModelDefine.LNTYPE.LONGNOTE;
         }
 
+        public double GetLastTime()
+        {
+            int keys = Mode.Key;
+            for (int i = Timelines.Length - 1; i >= 0; i--)
+            {
+                Timeline tl = Timelines[i];
+                for (int lane = 0; lane < keys; lane++)
+                {
+                    if (tl.ExistNote(lane) 
+                        || tl.GetHiddenNote(lane) != null
+                        || tl.BgNotes.Length > 0 || tl.Bga != -1
+                        || tl.Layer != -1)
+                    {
+                        return tl.Time;
+                    }
+                }
+            }
+
+            return 0;
+        }
+
+        public double GetLastNoteTime()
+        {
+            int keys = Mode.Key;
+            for (int i = Timelines.Length -1; i >= 0; i--)
+            {
+                Timeline tl = Timelines[i];
+                for (int lane = 0; lane < keys; lane++)
+                {
+                    if (tl.ExistNote(lane))
+                        return tl.Time;
+                }
+            }
+
+            return 0;
+        }
+
+        public int GetTotalNotes()
+        {
+            return BMSModelUtils.GetTotalNotes(this);
+        }
         public void SetPlayer(int player) => Player = player;
         public void SetMode(Mode mode) => Mode = mode;
         public void SetTitle(string title) => Title = title;
