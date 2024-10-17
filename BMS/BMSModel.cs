@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace BMS
 {
@@ -67,7 +68,10 @@ namespace BMS
 
         public void SetAllTimelines(Timeline[] timelines) => Timelines = timelines;
         public void SetChartInformation(ChartInformation info) => Info = info;
-        
+        public BMSModelDefine.LNTYPE GetLnType()
+        {
+            return Info != null ? Info.LnType : BMSModelDefine.LNTYPE.LONGNOTE;
+        }
 
         public void SetPlayer(int player) => Player = player;
         public void SetMode(Mode mode) => Mode = mode;
