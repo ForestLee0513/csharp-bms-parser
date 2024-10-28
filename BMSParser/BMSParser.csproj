@@ -59,7 +59,16 @@
   <ItemGroup>
     <Compile Include="BMS.cs" />
     <Compile Include="BMSModel.cs" />
+    <Compile Include="BMSObject\BPM.cs" />
+    <Compile Include="BMSObject\Note\HiddenNote.cs" />
+    <Compile Include="BMSObject\Note\LongNote.cs" />
+    <Compile Include="BMSObject\Note\MineNote.cs" />
+    <Compile Include="BMSObject\Note\NormalNote.cs" />
+    <Compile Include="BMSObject\Note\Note.cs" />
+    <Compile Include="BMSObject\Object.cs" />
+    <Compile Include="BMSObject\Stop.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TimeLine.cs" />
     <Compile Include="Utils\Define.cs" />
     <Compile Include="Utils\Util.cs" />
   </ItemGroup>

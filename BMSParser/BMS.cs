@@ -121,7 +121,7 @@ namespace BMSParser
                         }
                         #endregion Random
 
-                        #region Execuate Command
+                        #region Parse headers
                         if (key.StartsWith("WAV"))
                         {
                             string wavKey = key.Substring(3);
@@ -204,6 +204,10 @@ namespace BMSParser
                         {
                             headerCommands[key](model, value);
                         }
+                        #endregion
+
+                        #region Parse main data
+
                         #endregion
                     }
                 } while (!reader.EndOfStream);
