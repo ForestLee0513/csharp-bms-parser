@@ -36,5 +36,9 @@ namespace BMSParser
         public string MidiFile { get; set; }
         public string[] Bmp { get; set; } = new string[62 * 62];
         #endregion
+
+        #region Main Data
+
+        #endregion
     }
 }
