@@ -1,4 +1,5 @@
 ﻿using static BMSParser.Define.BMSModel;
+using static BMSParser.Define.TimeLine;
 
 namespace BMSParser
 {
@@ -10,6 +11,7 @@ namespace BMSParser
         public string SHA256 { get; set; }
         public string MD5 { get; set; }
         public Base Base { get; set; }
+        public BMSKey Mode { get; set; } = BMSKey.UNKNOWN;
         #endregion
 
         #region HEADER
@@ -38,7 +40,7 @@ namespace BMSParser
         #endregion
 
         #region Main Data
-
+        public TimeLine TimeLine { get; } = new TimeLine();
         #endregion
     }
 }

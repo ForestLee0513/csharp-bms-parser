@@ -1,8 +1,12 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using static BMSParser.Define.BMSModel;
+using static BMSParser.Define.TimeLine;
 
 namespace BMSParser
 {
@@ -45,8 +49,8 @@ namespace BMSParser
 
                     if (line[0] == '#')
                     {
-                        string key = line.IndexOf(" ") > -1 ? line.Substring(1, line.IndexOf(" ") - 1) : line.IndexOf(":") > -1 ? line.Substring(1, line.IndexOf(":") - 1) : line.Substring(1);
-                        string value = line.IndexOf(" ") > -1 ? line.Substring(line.IndexOf(" ") + 1) : "";
+                        string key = line.IndexOf(' ') > -1 ? line.Substring(1, line.IndexOf(' ') - 1) : line.Substring(1);
+                        string value = line.IndexOf(' ') > -1 ? line.Substring(line.IndexOf(' ') + 1) : "";
 
                         #region Random
                         if (key == "RANDOM")
@@ -207,11 +211,93 @@ namespace BMSParser
                         #endregion
 
                         #region Parse main data
+                        bool isMainData = line.IndexOf(':') > -1 && !headerCommands.ContainsKey(key);
 
+                        if (isMainData)
+                        {
+                            string[] mainDataKeyValuePair = line.Substring(1).Split(':');
+                            string mainDataHeader = mainDataKeyValuePair[0];
+                            string mainDataValue = mainDataKeyValuePair[1];
+
+                            int measure = int.Parse(mainDataHeader.Substring(0, 3));
+                            int channel = (int)Util.Decode.DecodeBase36(mainDataHeader.Substring(3));
+
+                            model.TimeLine.AddBMSObject(measure, channel, mainDataValue);
+                        }
                         #endregion
                     }
                 } while (!reader.EndOfStream);
             }
+
+            foreach (KeyValuePair<BMSKey, KeyMap> entry in KeyMapTable)
+            {
+                BMSKey key = entry.Key;
+                KeyMap map = entry.Value;
+
+                bool isKeyboardCorrect = false;
+                bool isScratchKeyCorrect = false;
+                bool isFootPedalKeyCorrect = false;
+
+                for (int i = 0; i < map.Keyboard.Length; i++)
+                {
+                    int targetIndex = map.Keyboard[i];
+                    if (targetIndex > model.TimeLine.assignedKeys.Length - 1 || model.TimeLine.assignedKeys[targetIndex] == false)
+                    {
+                        isKeyboardCorrect = false;
+                        break;
+                    }
+
+                    if (model.TimeLine.assignedKeys[targetIndex] == false)
+                    {
+                        isKeyboardCorrect = model.TimeLine.assignedKeys[targetIndex];
+                        break;
+                    }
+
+                    isKeyboardCorrect = model.TimeLine.assignedKeys[targetIndex];
+                }
+                if (map.Keyboard.Length == 0)
+                    isKeyboardCorrect = true;
+
+                for (int i = 0; i < map.Scratch.Length; i++)
+                {
+                    int targetIndex = map.Scratch[i];
+                    if (targetIndex > model.TimeLine.assignedKeys.Length - 1 || model.TimeLine.assignedKeys[targetIndex] == false)
+                    {
+                        isScratchKeyCorrect = false;
+                        break;
+                    }
+
+                    isScratchKeyCorrect = model.TimeLine.assignedKeys[targetIndex];
+                }
+                if (map.Scratch.Length == 0)
+                    isScratchKeyCorrect = true;
+
+                for (int i = 0; i < map.FootPedal.Length; i++)
+                {
+                    int targetIndex = map.Keyboard[i];
+                    if (targetIndex > model.TimeLine.assignedKeys.Length - 1 || model.TimeLine.assignedKeys[targetIndex] == false)
+                    {
+                        isFootPedalKeyCorrect = false;
+                        break;
+                    }
+
+                    isFootPedalKeyCorrect = model.TimeLine.assignedKeys[targetIndex];
+                }
+                if (map.FootPedal.Length == 0)
+                    isFootPedalKeyCorrect = true;
+
+                if (isKeyboardCorrect && isScratchKeyCorrect && isFootPedalKeyCorrect) 
+                {
+                    model.Mode = key;
+                }
+            }
+
+            //for (int i = 0; i < model.TimeLine.assignedKeys.Length; i++)
+            //{
+            //    Console.WriteLine($"{i} / {model.TimeLine.assignedKeys[i]}");
+            //}
+
+            Console.WriteLine(model.Mode);
 
             return model;
         }
@@ -271,7 +357,7 @@ namespace BMSParser
                             Console.WriteLine("#DEFEXRANK는 0보다 높게 지정돼야 합니다.");
                         }
                     }
-                    catch (FormatException e)
+                    catch
                     {
                         throw new FormatException("#DEFEXRANK 파싱에 실패했습니다. 숫자가 제대로 들어오는지 확인 해주세요.");
                     }

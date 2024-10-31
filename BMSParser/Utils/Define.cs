@@ -38,7 +38,7 @@ namespace BMSParser
             public enum Channel
             {
                 BGM,
-                MEASURE,
+                BEAT,
                 BPM_CHANGE,
                 BGA_BASE,
                 BGA_POOR = 6,
@@ -64,7 +64,8 @@ namespace BMSParser
                 /// <summary>
                 /// BMS에서 노트를 다 파싱하고 나서 몇 키인지 정의하는 클래스<br />
                 /// index를 기준으로 0부터 시작하며 7키의 경우 아래와 같이 정의됨<br />
-                /// 스크래치: 5 / 일반 노트: 0, 1, 2, 3, 4, 7, 8
+                /// 스크래치: 5 / 일반 노트: 0, 1, 2, 3, 4, 7, 8<br />
+                /// 할당하고 싶지 않은 영역이 있다면 빈 배열로 초기화 처리
                 /// </summary>
                 /// <param name="keyboard">노트 키에 해당되는 채널</param>
                 /// <param name="scratch">스크래치 키에 해당되는 채널</param>
@@ -83,29 +84,38 @@ namespace BMSParser
             // Qwilight와 같은 일부 구동기에서만 사용되는 4키, 6키의 경우는 채널 연구와 동시에 저작권적으로 사용 허가가 필요할 듯
             public enum BMSKey
             {
+                UNKNOWN,
                 BMS_5K,
+                BMS_5K_ONLY,
                 BMS_7K,
+                BMS_7K_ONLY,
                 BMS_10K,
                 BMS_14K,
                 PMS
             }
 
-            public Dictionary<BMSKey, KeyMap> KeyMapTable = new Dictionary<BMSKey, KeyMap>()
+            public static Dictionary<BMSKey, KeyMap> KeyMapTable = new Dictionary<BMSKey, KeyMap>()
             {
                 {
-                    BMSKey.BMS_5K, new KeyMap(new int[] { 0, 1, 2, 3, 4 }, new int[] { 5 }, null)
+                    BMSKey.BMS_5K_ONLY, new KeyMap(new int[] { 0, 1, 2, 3, 4 }, new int[0], new int[0])
                 },
                 {
-                    BMSKey.BMS_7K, new KeyMap(new int[] { 0, 1, 2, 3, 4, 7, 8 }, new int[] { 5 }, null)
+                    BMSKey.BMS_5K, new KeyMap(new int[] { 0, 1, 2, 3, 4 }, new int[] { 5 }, new int[0])
                 },
                 {
-                    BMSKey.BMS_10K, new KeyMap(new int[] { 0, 1, 2, 3, 4, 10, 11, 12, 13, 14 }, new int[] { 5, 15 }, null)
+                    BMSKey.BMS_7K_ONLY, new KeyMap(new int[] { 0, 1, 2, 3, 4, 7, 8 }, new int[0], new int[0])
                 },
                 {
-                    BMSKey.BMS_14K, new KeyMap(new int[] { 0, 1, 2, 3, 4, 7, 8, 10, 11, 12, 13, 14, 17, 18 }, new int[] { 5, 15 }, null)
+                    BMSKey.BMS_7K, new KeyMap(new int[] { 0, 1, 2, 3, 4, 7, 8 }, new int[] { 5 }, new int[0])
                 },
                 {
-                    BMSKey.PMS, new KeyMap(new int[] { 0, 1, 2, 3, 4, 11, 12, 13, 14 }, null, null)
+                    BMSKey.BMS_10K, new KeyMap(new int[] { 0, 1, 2, 3, 4, 10, 11, 12, 13, 14 }, new int[] { 5, 15 }, new int[0])
+                },
+                {
+                    BMSKey.BMS_14K, new KeyMap(new int[] { 0, 1, 2, 3, 4, 7, 8, 10, 11, 12, 13, 14, 17, 18 }, new int[] { 5, 15 }, new int[0])
+                },
+                {
+                    BMSKey.PMS, new KeyMap(new int[] { 0, 1, 2, 3, 4, 11, 12, 13, 14 }, new int[0], new int[0])
                 }
             };
         }
