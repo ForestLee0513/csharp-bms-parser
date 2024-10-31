@@ -78,9 +78,9 @@ namespace BMSParser
                 }
             }
 
-            // 스크래치 없는 모드까지 추가해야하나?
             // PMS는 5키 전용으로 따로 내줘야하나?
             // 키보드매니아까지 추가할 경우 24키/48키에 대한 bms파일 채널 연구가 필요함.
+            // DP모드의 경우 1P 영역 / 2P 영역은 다른데 과연 노트 영역을 하나로 합쳐줘도 괜찮은가? TimeLine에서 1P / 2P 관리를 해줘야하는게 아닐까?
             // Qwilight와 같은 일부 구동기에서만 사용되는 4키, 6키의 경우는 채널 연구와 동시에 저작권적으로 사용 허가가 필요할 듯
             public enum BMSKey
             {
@@ -109,13 +109,13 @@ namespace BMSParser
                     BMSKey.BMS_7K, new KeyMap(new int[] { 0, 1, 2, 3, 4, 7, 8 }, new int[] { 5 }, new int[0])
                 },
                 {
+                    BMSKey.PMS, new KeyMap(new int[] { 0, 1, 2, 3, 4, 11, 12, 13, 14 }, new int[0], new int[0])
+                },
+                {
                     BMSKey.BMS_10K, new KeyMap(new int[] { 0, 1, 2, 3, 4, 10, 11, 12, 13, 14 }, new int[] { 5, 15 }, new int[0])
                 },
                 {
                     BMSKey.BMS_14K, new KeyMap(new int[] { 0, 1, 2, 3, 4, 7, 8, 10, 11, 12, 13, 14, 17, 18 }, new int[] { 5, 15 }, new int[0])
-                },
-                {
-                    BMSKey.PMS, new KeyMap(new int[] { 0, 1, 2, 3, 4, 11, 12, 13, 14 }, new int[0], new int[0])
                 }
             };
         }

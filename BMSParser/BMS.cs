@@ -292,10 +292,10 @@ namespace BMSParser
                 }
             }
 
-            //for (int i = 0; i < model.TimeLine.assignedKeys.Length; i++)
-            //{
-            //    Console.WriteLine($"{i} / {model.TimeLine.assignedKeys[i]}");
-            //}
+            for (int i = 0; i < model.TimeLine.assignedKeys.Length; i++)
+            {
+                Console.WriteLine($"{i} / {model.TimeLine.assignedKeys[i]}");
+            }
 
             Console.WriteLine(model.Mode);
 
