@@ -6,6 +6,11 @@ namespace BMSParser
     {
         public static class Decode
         {
+            public static bool IsBase16(string s)
+            {
+                return s.All(c => char.IsDigit(c) || (c >= 'A' && c <= 'F'));
+            }
+
             public static bool IsBase36(string s)
             {
                 return s.All(c => char.IsDigit(c) || (c >= 'A' && c <= 'Z'));

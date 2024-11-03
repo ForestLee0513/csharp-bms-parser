@@ -37,8 +37,8 @@ namespace BMSParser
             /// </summary>
             public enum Channel
             {
-                BGM,
-                BEAT,
+                BGM = 1,
+                MEASURE_BEAT,
                 BPM_CHANGE,
                 BGA_BASE,
                 BGA_POOR = 6,

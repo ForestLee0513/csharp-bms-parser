@@ -2,6 +2,6 @@
 {
     public abstract class BMSObject
     {
-        public double Timing { get; }
+        public double Timing { get; set; }
     }
 }

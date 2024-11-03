@@ -184,6 +184,8 @@ namespace BMSParser
                             {
                                 double.TryParse(value, out double bpm);
                                 model.Bpm = bpm;
+                                model.TimeLine.ExtendMeasure(0);
+                                model.TimeLine.Measures[0].AddBPMChange(0, 0, 4, bpm, bpm);
                             }
                             else
                             {
@@ -222,7 +224,7 @@ namespace BMSParser
                             int measure = int.Parse(mainDataHeader.Substring(0, 3));
                             int channel = (int)Util.Decode.DecodeBase36(mainDataHeader.Substring(3));
 
-                            model.TimeLine.AddBMSObject(measure, channel, mainDataValue);
+                            model.TimeLine.AddBMSObject(measure, channel, mainDataValue, model);
                         }
                         #endregion
                     }
@@ -291,13 +293,6 @@ namespace BMSParser
                     model.Mode = key;
                 }
             }
-
-            for (int i = 0; i < model.TimeLine.assignedKeys.Length; i++)
-            {
-                Console.WriteLine($"{i} / {model.TimeLine.assignedKeys[i]}");
-            }
-
-            Console.WriteLine(model.Mode);
 
             return model;
         }
