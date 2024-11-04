@@ -9,7 +9,6 @@ namespace BMSParser
         public Stop[] StopEvent { get; set; } = new Stop[0];
         public NormalNote[] BGM { get; set; } = new NormalNote[0];
         public Note[,] Lane { get; set; } = new Note[0, 0];
-
         public void AddBGM(int beat, int wav)
         {
 
@@ -21,26 +20,65 @@ namespace BMSParser
         /// <param name="measureBeat">지정하고 싶은 비트의 수 (4/4 박자는 1.0)</param>
         public void SetBeat(float measureBeat) => MeasureBeat = measureBeat;
 
+        public double GetLastBpmChangeTiming()
+        {
+            double lastTiming = 0;
+
+            if (bpmEvent.Length > 1) 
+            { 
+                for (int i = 0; i < bpmEvent.Length; i++) 
+                {
+                    lastTiming += bpmEvent[i].Timing;
+                }
+            }
+            else
+            {
+                lastTiming = 0;
+            }
+
+            return lastTiming;
+        }
+        
         /// <summary>
-        /// 해당 마디의 비트에 bpm을 갱신하는 이벤트를 추가합니다.
+        /// 이게맞는결과물 BPM이벤트 추가하기
         /// </summary>
-        /// <param name="previousTiming">지금가지 누산된 시간</param> // 추가해야됨!!
-        /// <param name="currentBeat">현재비트</param>
-        /// <param name="totalBeat">총 비트</param>
-        /// <param name="prevBpm">해당 이벤트를 추가 하기 전 기존의 BPM</param>
-        /// <param name="targetBpm">설정하고자 하는 BPM</param>
-        public void AddBPMChange(double previousTiming, int currentBeat, int totalBeat, double prevBpm, double targetBpm)
+        /// <param name="measure"></param>
+        /// <param name="currentBeat"></param>
+        /// <param name="totalBeat"></param>
+        /// <param name="prevBpm"></param>
+        /// <param name="targetBpm"></param>
+        public void AddBPMChange(int measure, int currentBeat, int totalBeat, double prevBpm, double targetBpm)
+        {
+            AddBPMChange(currentBeat, totalBeat, prevBpm, targetBpm);
+            // DEBUG //
+            float calculatedBeat = (float)currentBeat / totalBeat * 4.0f * MeasureBeat;
+            float totalMeasureBeat = 4 * MeasureBeat;
+            double maxTiming = 60000 / prevBpm;
+
+            float position = calculatedBeat / totalMeasureBeat;
+            double timing = maxTiming * (position);
+            Console.WriteLine($"{measure}번의 비트는 {MeasureBeat} / {measure}번째에 추가할 이벤트의 비트는 {calculatedBeat} / {totalMeasureBeat} = {position}");
+            Console.WriteLine($"{measure}번에 추가될 시간은 {timing} / 기존 bpm은 {prevBpm} / 변경될 bpm은 {targetBpm}");
+            Console.WriteLine($"-----------------------------------------------------------------------------------------");
+        }
+
+        public void AddBPMChange(int currentBeat, int totalBeat, double prevBpm, double targetBpm)
         {
             Array.Resize(ref bpmEvent, bpmEvent.Length + 1);
             int targetIndex = bpmEvent.Length - 1;
-            float beatPosition = currentBeat / (totalBeat * MeasureBeat);
-            double timing = beatPosition * (60 / prevBpm) * 1000;
-            bpmEvent[targetIndex] = new BPM(timing, targetBpm);
+            float calculatedBeat = (float)currentBeat / totalBeat * 4.0f * MeasureBeat;
+            float totalMeasureBeat = 4 * MeasureBeat;
+            double maxTiming = 60000 / prevBpm;
+
+            float position = calculatedBeat / totalMeasureBeat;
+            double timing = maxTiming * (position);
+
+            bpmEvent[targetIndex] = new BPM(position, targetBpm);
         }
 
-        public void AddBGA(int beat, int bmp)
+        public void AddBGA(int currentBeat, int totalBeat, int bmp)
         {
-
+            float position = currentBeat / (totalBeat * MeasureBeat);
         }
 
         public void AddStopEvent(int beat, double stopDuration)
@@ -48,20 +86,9 @@ namespace BMSParser
 
         }
 
-        /// <summary>
-        /// 노트를 추가하는 매서드입니다.
-        /// </summary>
-        /// <param name="line">키 위치</param>
-        /// <param name="beat">비트</param>
-        /// <param name="bpm">기준BPM</param>
-        /// <param name="wav">키음</param>
-        public void AddNotes(int line, int beat, double bpm, int wav)
+        public void AddNotes(int line, int currentBeat, int totalBeat, double bpm, int wav)
         {
-            // 해당 마디에 bpm 이벤트가 있는지 확인 후 있다면 파라미터로 넘어온 값을 무시하고 이 마디에 있는 마지막 bpm이벤트를 기준으로 BPM을 지정
-            if (BpmEvent.Length > 0)
-            {
-                BPM previousBpmEvent = BpmEvent[BpmEvent.Length - 1];
-            }
+            
         }
     }
 }

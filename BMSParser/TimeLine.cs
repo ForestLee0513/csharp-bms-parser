@@ -48,12 +48,6 @@ namespace BMSParser
 
             return bpm;
         }
-        
-        // Measure와 BPM을 순회하면서 원하는 타이밍 이전의 BPM을 확인
-        //private double GetLastChangedBpm(double timing)
-        //{
-
-        //}
 
         // Model 가져오기.
         public void AddBMSObject(int measure, int channel, string value, BMSModel model)
@@ -61,11 +55,14 @@ namespace BMSParser
             ExtendMeasure(measure);
             int totalBeat = value.Length / 2;
 
-            for (int i = 0; i <  value.Length - 1; i += 2) 
+            for (int i = 0; i <  value.Length - 1; i += 2)
             {
                 int beat = i / 2;
                 string encodedValue = value.Substring(i, 2);
                 int decodedValue = (int)Util.Decode.DecodeBase36(encodedValue);
+
+                if (encodedValue == "00")
+                    continue;
 
                 // Event Channel //
                 if ((Channel)channel == Channel.BGM)
@@ -81,26 +78,13 @@ namespace BMSParser
 
                 if ((Channel)channel == Channel.BPM_CHANGE)
                 {
-
                     // Cases //
                     // 1. 16진수로 파싱한 값이 255이하이면서 bpm 테이블에 없는 경우 - 16진수 처리
-                    // 2. 16진수로 파싱한 값이 255이하이지만 bpm 테이블에 있는 경우 - 36진수 처리
-                    // 3. 16진수로 파싱이 안되는 경우 - 36진수 처리
-                    
-                    // IMPORTANT //
-                    // 기존에 가산됐던 시간도 같이 넣어줘야됨!!!!!
-                    if (decodedValue > 0)
+                    // 2. 16진수로 파싱한 값이 255 이상이면서 bpm테이블에 있는 경우는 EXBPM으로 별도처리
+                    if (Util.Decode.DecodeBase16(encodedValue) < 256)
                     {
-                        if (Util.Decode.IsBase16(encodedValue))
-                        {
-                            measures[measure].AddBPMChange(measure, beat, totalBeat, GetLastChangedBpm(measure), Util.Decode.DecodeBase16(encodedValue));
-                            continue;
-                        }
-                        else
-                        {
-                            measures[measure].AddBPMChange(measure, beat, totalBeat, GetLastChangedBpm(measure), decodedValue);
-                            continue;
-                        }
+                        measures[measure].AddBPMChange(measure, beat, totalBeat, GetLastChangedBpm(measure), Util.Decode.DecodeBase16(encodedValue));
+                        continue;
                     }
                 }
 
@@ -121,7 +105,11 @@ namespace BMSParser
 
                 if ((Channel)channel == Channel.EXBPM)
                 {
-
+                    if (model.BpmList[Util.Decode.DecodeBase36(encodedValue)] > 0)
+                    {
+                        measures[measure].AddBPMChange(measure, beat, totalBeat, GetLastChangedBpm(measure), model.BpmList[Util.Decode.DecodeBase36(encodedValue)]);
+                        continue;
+                    }
                 }
 
                 if ((Channel)channel == Channel.STOP)
