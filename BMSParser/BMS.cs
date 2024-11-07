@@ -226,47 +226,47 @@ namespace BMSParser
                         #endregion
                     }
                 } while (!reader.EndOfStream);
-
-                #region Validate Key Mode
-                BMSKey p1Key = ValidateKey(model.TimeLine.assigned1PKeys);
-                BMSKey p2Key = ValidateKey(model.TimeLine.assigned2PKeys);
-
-                // p2가 있으면서 p1이 없으면 p1으로 이동
-                if (p2Key != BMSKey.UNKNOWN && p1Key == BMSKey.UNKNOWN)
-                {
-                    p1Key = p2Key;
-                    p2Key = BMSKey.UNKNOWN;
-                    model.TimeLine.assigned1PKeys = model.TimeLine.assigned2PKeys;
-                    model.TimeLine.assigned2PKeys = new bool[0];
-                    model.Mode = p1Key;
-                }
-                else if (p1Key != BMSKey.UNKNOWN && p2Key == BMSKey.UNKNOWN)
-                {
-                    model.Mode = p1Key;
-                }
-                
-                // p1과 p2가 동시에 할당되어 있다면 DP로 인식
-                if (p1Key != BMSKey.UNKNOWN && p2Key != BMSKey.UNKNOWN)
-                {
-                    if (p1Key == BMSKey.BMS_5K || p1Key == BMSKey.BMS_5K_ONLY || p2Key == BMSKey.BMS_5K || p2Key == BMSKey.BMS_5K_ONLY)
-                    {
-                        model.Mode = BMSKey.BMS_10K;
-                    }
-                    else if (p1Key == BMSKey.BMS_5K || p1Key == BMSKey.BMS_5K_ONLY || p2Key == BMSKey.BMS_5K || p2Key == BMSKey.BMS_5K_ONLY)
-                    {
-                        model.Mode = BMSKey.BMS_14K;
-                    }
-                }
-                #endregion
-
-                #region Calculate Object Timings
-                // Assign previous beats
-                for (int i = 0; i < model.TimeLine.Measures.Length; i++)
-                {
-                    model.TimeLine.Measures[i].SetPrevBeat(model.TimeLine.GetPreviousTotalScales(i));
-                }
-                #endregion
             }
+
+            #region Validate Key Mode
+            BMSKey p1Key = ValidateKey(model.TimeLine.assigned1PKeys);
+            BMSKey p2Key = ValidateKey(model.TimeLine.assigned2PKeys);
+
+            // p2가 있으면서 p1이 없으면 p1으로 이동
+            if (p2Key != BMSKey.UNKNOWN && p1Key == BMSKey.UNKNOWN)
+            {
+                p1Key = p2Key;
+                p2Key = BMSKey.UNKNOWN;
+                model.TimeLine.assigned1PKeys = model.TimeLine.assigned2PKeys;
+                model.TimeLine.assigned2PKeys = new bool[0];
+                model.Mode = p1Key;
+            }
+            else if (p1Key != BMSKey.UNKNOWN && p2Key == BMSKey.UNKNOWN)
+            {
+                model.Mode = p1Key;
+            }
+
+            // p1과 p2가 동시에 할당되어 있다면 DP로 인식
+            if (p1Key != BMSKey.UNKNOWN && p2Key != BMSKey.UNKNOWN)
+            {
+                if (p1Key == BMSKey.BMS_5K || p1Key == BMSKey.BMS_5K_ONLY || p2Key == BMSKey.BMS_5K || p2Key == BMSKey.BMS_5K_ONLY)
+                {
+                    model.Mode = BMSKey.BMS_10K;
+                }
+                else if (p1Key == BMSKey.BMS_5K || p1Key == BMSKey.BMS_5K_ONLY || p2Key == BMSKey.BMS_5K || p2Key == BMSKey.BMS_5K_ONLY)
+                {
+                    model.Mode = BMSKey.BMS_14K;
+                }
+            }
+            #endregion
+
+            #region Calculate Object Timings
+            // Assign previous beats
+            for (int i = 0; i < model.TimeLine.Measures.Length; i++)
+            {
+                model.TimeLine.Measures[i].SetPrevBeat(model.TimeLine.GetPreviousTotalScales(i));
+            }
+            #endregion
 
             return model;
         }
