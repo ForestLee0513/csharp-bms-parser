@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using static BMSParser.Define.TimeLine;
 
 namespace BMSParser
@@ -9,7 +10,8 @@ namespace BMSParser
         // BMS 스펙 상에서 보면 11 ~ 1Z까지 확장되는 경우가 있는데, 모든 이벤트로 분리하지 않더라고 1P와 2P는 분리해야지 확장성 챙길 수 있을 듯 함.
         private Measure[] measures = new Measure[0];
         public Measure[] Measures { get { return measures; } }
-        public bool[] assignedKeys = new bool[0];
+        public bool[] assigned1PKeys = new bool[0];
+        public bool[] assigned2PKeys = new bool[0];
 
         /// <summary>
         /// 해당 마디가 있는지 확인하고 나서 없으면 해당 마디 + 1 만큼 확장
@@ -23,68 +25,63 @@ namespace BMSParser
                 Array.Resize(ref measures, measure + 1);
             }
 
-            if (measures[measure] == null)
-            {
-                measures[measure] = new Measure();
-            }
-        }
-
-        // BPM 이벤트 추가 하기 전 마지막 BPM 확인
-        private double GetLastChangedBpm(int measure)
-        {
-            double bpm = 0;
             for (int i = 0; i < measure + 1; i++)
             {
-                Measure previousMeasure = measures[i];
-
-                if (previousMeasure != null)
+                if (measures[i] == null)
                 {
-                    if (previousMeasure.BpmEvent.Length > 0)
-                    {
-                        bpm = previousMeasure.BpmEvent[previousMeasure.BpmEvent.Length - 1] != null ? previousMeasure.BpmEvent[previousMeasure.BpmEvent.Length - 1].Bpm : 0;
-                    }
+                    measures[measure] = new Measure();
                 }
             }
+        }
+        public float GetPreviousTotalScales(int measure)
+        {
+            float sum = 0;
+            for (int i = 0; i < measure; i++)
+            {
+                sum += measures[i].Scale;
+            }
 
-            return bpm;
+            return sum;
         }
 
-        // Model 가져오기.
-        public void AddBMSObject(int measure, int channel, string value, BMSModel model)
+        /// <summary>
+        /// BMS 이벤트의 비트 추가
+        /// </summary>
+        /// <param name="measure">마디</param>
+        /// <param name="channel">채널</param>
+        /// <param name="value">값</param>
+        /// <param name="model">참조하고 싶은 BMS모델</param>
+        public void AssignObjectsBeat(int measure, int channel, string value, BMSModel model)
         {
             ExtendMeasure(measure);
             int totalBeat = value.Length / 2;
 
-            for (int i = 0; i <  value.Length - 1; i += 2)
+            for (int i = 0; i < value.Length - 1; i += 2)
             {
-                int beat = i / 2;
-                string encodedValue = value.Substring(i, 2);
-                int decodedValue = (int)Util.Decode.DecodeBase36(encodedValue);
+                string splittedValue = value.Substring(i, 2);
 
-                if (encodedValue == "00")
-                    continue;
+                if ((Channel)channel == Channel.MEASURE_BEAT)
+                {
+                    float measureBeat = float.Parse(value);
+                    measures[measure].SetScale(measureBeat);
+                }
 
-                // Event Channel //
+                float beat = (1.0f * i / 2 / totalBeat) * measures[measure].Scale;
+
                 if ((Channel)channel == Channel.BGM)
                 {
 
                 }
 
-                if ((Channel)channel == Channel.MEASURE_BEAT)
-                {
-                    float measureBeat = float.Parse(value);
-                    measures[measure].SetBeat(measureBeat);
-                }
-
                 if ((Channel)channel == Channel.BPM_CHANGE)
                 {
-                    // Cases //
-                    // 1. 16진수로 파싱한 값이 255이하이면서 bpm 테이블에 없는 경우 - 16진수 처리
-                    // 2. 16진수로 파싱한 값이 255 이상이면서 bpm테이블에 있는 경우는 EXBPM으로 별도처리
-                    if (Util.Decode.DecodeBase16(encodedValue) < 256)
-                    {
-                        measures[measure].AddBPMChange(measure, beat, totalBeat, GetLastChangedBpm(measure), Util.Decode.DecodeBase16(encodedValue));
+                    if (splittedValue == "00")
                         continue;
+
+                    if (Util.Decode.DecodeBase16(splittedValue) < 256)
+                    {
+                        Console.WriteLine($"BPM HEX | {measure} {beat}");
+                        measures[measure].AddBPMEvent(beat, Util.Decode.DecodeBase16(splittedValue));
                     }
                 }
 
@@ -105,33 +102,56 @@ namespace BMSParser
 
                 if ((Channel)channel == Channel.EXBPM)
                 {
-                    if (model.BpmList[Util.Decode.DecodeBase36(encodedValue)] > 0)
-                    {
-                        measures[measure].AddBPMChange(measure, beat, totalBeat, GetLastChangedBpm(measure), model.BpmList[Util.Decode.DecodeBase36(encodedValue)]);
+                    if (splittedValue == "00")
                         continue;
+
+                    if (model.Base == Define.BMSModel.Base.BASE62)
+                    {
+                        Console.WriteLine($"EX BASE 62 | {measure} {beat}");
+                        measures[measure].AddBPMEvent(beat, model.BpmList[Util.Decode.DecodeBase62(splittedValue)]);
+                    }
+                    else
+                    {
+                        Console.WriteLine($"EX BASE 36 | {measure} {beat}");
+
+                        measures[measure].AddBPMEvent(beat, model.BpmList[Util.Decode.DecodeBase36(splittedValue)]);
                     }
                 }
 
                 if ((Channel)channel == Channel.STOP)
                 {
+                    if (splittedValue == "00")
+                    {
+                        continue;
+                    }
 
+                    if (model.Base == Define.BMSModel.Base.BASE62)
+                    {
+                        Console.WriteLine($"STOP 36 | {measure} {beat}");
+                        measures[measure].AddStopEvent(beat, model.BpmList[Util.Decode.DecodeBase62(splittedValue)]);
+                    }
+                    else
+                    {
+                        Console.WriteLine($"STOP 36 | {measure} {beat}");
+                        measures[measure].AddStopEvent(beat, model.BpmList[Util.Decode.DecodeBase36(splittedValue)]);
+                    }
                 }
 
                 // Note Channel //
                 // 1P Normal
                 if (channel >= (int)Channel.P1_NORMAL_START_POS && channel < (int)Channel.P2_NORMAL_START_POS)
                 {
-                    int lane = channel - (int)Channel.P1_NORMAL_START_POS;
-                    //double lastBpm = GetLastChangedBpm(measure);
+                    if (splittedValue == "00")
+                        continue;
 
-                    //Console.WriteLine($"{beat} / {totalBeat}에 추가 하기 전 {measure}의 bpm은 {lastBpm}");
+                    int lane = channel - (int)Channel.P1_NORMAL_START_POS;
 
                     // 모드 구분을 위한 할당된 키 갱신
-                    if (assignedKeys.Length < lane + 1)
+                    if (assigned1PKeys.Length < lane + 1)
                     {
-                        Array.Resize(ref assignedKeys, lane + 1);
+                        Array.Resize(ref assigned1PKeys, lane + 1);
                     }
-                    assignedKeys[lane] = true;
+                    assigned1PKeys[lane] = true;
 
                     // 노트 추가
                 }
@@ -139,14 +159,17 @@ namespace BMSParser
                 // 2P Normal
                 if (channel >= (int)Channel.P2_NORMAL_START_POS && channel < (int)Channel.P1_INVISIBLE_START_POS)
                 {
-                    int lane = (channel - (int)Channel.P2_NORMAL_START_POS) + 10;
+                    if (splittedValue == "00")
+                        continue;
+
+                    int lane = channel - (int)Channel.P2_NORMAL_START_POS;
 
                     //모드 구분을 위한 할당된 키 갱신
-                    if (assignedKeys.Length < lane + 1)
+                    if (assigned2PKeys.Length < lane + 1)
                     {
-                        Array.Resize(ref assignedKeys, lane + 1);
+                        Array.Resize(ref assigned2PKeys, lane + 1);
                     }
-                    assignedKeys[lane] = true;
+                    assigned2PKeys[lane] = true;
 
                     // 노트 추가
                 }
@@ -154,14 +177,17 @@ namespace BMSParser
                 // 1P Invisible
                 if (channel >= (int)Channel.P1_INVISIBLE_START_POS && channel < (int)Channel.P2_INVISIBLE_START_POS)
                 {
+                    if (splittedValue == "00")
+                        continue;
+
                     int lane = channel - (int)Channel.P1_INVISIBLE_START_POS;
 
                     // 모드 구분을 위한 할당된 키 갱신
-                    if (assignedKeys.Length < lane + 1)
+                    if (assigned1PKeys.Length < lane + 1)
                     {
-                        Array.Resize(ref assignedKeys, lane + 1);
+                        Array.Resize(ref assigned1PKeys, lane + 1);
                     }
-                    assignedKeys[lane] = true;
+                    assigned1PKeys[lane] = true;
 
                     // 노트 추가
                 }
@@ -169,14 +195,17 @@ namespace BMSParser
                 // 2P Invisible
                 if (channel >= (int)Channel.P2_INVISIBLE_START_POS && channel < (int)Channel.P1_LONGNOTE_START_POS)
                 {
-                    int lane = (channel - (int)Channel.P2_INVISIBLE_START_POS) + 10;
+                    if (splittedValue == "00")
+                        continue;
+
+                    int lane = (channel - (int)Channel.P2_INVISIBLE_START_POS);
 
                     // 모드 구분을 위한 할당된 키 갱신
-                    if (assignedKeys.Length < lane + 1)
+                    if (assigned2PKeys.Length < lane + 1)
                     {
-                        Array.Resize(ref assignedKeys, lane + 1);
+                        Array.Resize(ref assigned2PKeys, lane + 1);
                     }
-                    assignedKeys[lane] = true;
+                    assigned2PKeys[lane] = true;
 
                     // 노트 추가
                 }
@@ -184,14 +213,17 @@ namespace BMSParser
                 // 1P Longnote
                 if (channel >= (int)Channel.P1_LONGNOTE_START_POS && channel < (int)Channel.P2_LONGNOTE_START_POS)
                 {
+                    if (splittedValue == "00")
+                        continue;
+
                     int lane = channel - (int)Channel.P1_LONGNOTE_START_POS;
 
                     // 모드 구분을 위한 할당된 키 갱신
-                    if (assignedKeys.Length < lane + 1)
+                    if (assigned1PKeys.Length < lane + 1)
                     {
-                        Array.Resize(ref assignedKeys, lane + 1);
+                        Array.Resize(ref assigned1PKeys, lane + 1);
                     }
-                    assignedKeys[lane] = true;
+                    assigned1PKeys[lane] = true;
 
                     // 노트 추가
                 }
@@ -199,14 +231,17 @@ namespace BMSParser
                 // 2P Longnote
                 if (channel >= (int)Channel.P2_LONGNOTE_START_POS && channel < (int)Channel.P1_LANDMINE_START_POS)
                 {
-                    int lane = channel - (int)Channel.P2_LONGNOTE_START_POS + 10;
+                    if (splittedValue == "00")
+                        continue;
+
+                    int lane = channel - (int)Channel.P2_LONGNOTE_START_POS;
 
                     // 모드 구분을 위한 할당된 키 갱신
-                    if (assignedKeys.Length < lane + 1)
+                    if (assigned2PKeys.Length < lane + 1)
                     {
-                        Array.Resize(ref assignedKeys, lane + 1);
+                        Array.Resize(ref assigned2PKeys, lane + 1);
                     }
-                    assignedKeys[lane] = true;
+                    assigned2PKeys[lane] = true;
 
                     // 노트 추가
                 }
@@ -214,14 +249,17 @@ namespace BMSParser
                 // 1P Land Mine
                 if (channel >= (int)Channel.P1_LANDMINE_START_POS && channel < (int)Channel.P2_LANDMINE_START_POS)
                 {
+                    if (splittedValue == "00")
+                        continue;
+
                     int lane = channel - (int)Channel.P1_LANDMINE_START_POS;
 
                     // 모드 구분을 위한 할당된 키 갱신
-                    if (assignedKeys.Length < lane + 1)
+                    if (assigned1PKeys.Length < lane + 1)
                     {
-                        Array.Resize(ref assignedKeys, lane + 1);
+                        Array.Resize(ref assigned1PKeys, lane + 1);
                     }
-                    assignedKeys[lane] = true;
+                    assigned1PKeys[lane] = true;
 
                     // 노트 추가
                 }
@@ -229,14 +267,17 @@ namespace BMSParser
                 // 2P Land Mine
                 if (channel >= (int)Channel.P2_LANDMINE_START_POS)
                 {
-                    int lane = channel - (int)Channel.P2_LANDMINE_START_POS + 10;
+                    if (splittedValue == "00")
+                        continue;
+
+                    int lane = channel - (int)Channel.P2_LANDMINE_START_POS;
 
                     // 모드 구분을 위한 할당된 키 갱신
-                    if (assignedKeys.Length < lane + 1)
+                    if (assigned2PKeys.Length < lane + 1)
                     {
-                        Array.Resize(ref assignedKeys, lane + 1);
+                        Array.Resize(ref assigned2PKeys, lane + 1);
                     }
-                    assignedKeys[lane] = true;
+                    assigned2PKeys[lane] = true;
 
                     // 노트 추가
                 }

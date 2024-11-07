@@ -4,9 +4,8 @@
     {
         public double Bpm { get; }
 
-        public BPM(float position, double bpm)
+        public BPM(double bpm)
         {
-            Position = position;
             Bpm = bpm;
         }
     }

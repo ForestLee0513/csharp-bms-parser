@@ -1,94 +1,133 @@
-﻿using System;
+﻿using System.Collections.Generic;
+using System.Numerics;
+using System.Security.Authentication.ExtendedProtection;
 namespace BMSParser
 {
     public class Measure
     {
-        public float MeasureBeat { get; set; } = 1.0f; // 4/4가 기본값이므로 1.0f로 지정
-        private BPM[] bpmEvent = new BPM[0];
-        public BPM[] BpmEvent { get { return bpmEvent; } }
-        public Stop[] StopEvent { get; set; } = new Stop[0];
-        public NormalNote[] BGM { get; set; } = new NormalNote[0];
-        public Note[,] Lane { get; set; } = new Note[0, 0];
-        public void AddBGM(int beat, int wav)
-        {
+        public float Scale { get; set; } = 1.0f; // 4/4가 기본값이므로 1.0f로 지정
 
+        // BGM //
+        public SortedDictionary<double, List<NormalNote>> bgm = new SortedDictionary<double, List<NormalNote>>();
+        public SortedDictionary<double, List<NormalNote>> Bgm { get { return bgm; } }
+
+        // Note //
+        private readonly Dictionary<int, SortedDictionary<double, Note>> p1Lane = new Dictionary<int, SortedDictionary<double, Note>>();
+        public Dictionary<int, SortedDictionary<double, Note>> P1Lane { get { return p1Lane; } }
+
+        private readonly Dictionary<int, SortedDictionary<double, Note>> p2Lane = new Dictionary<int, SortedDictionary<double, Note>>();
+        public Dictionary<int, SortedDictionary<double, Note>> P2Lane { get { return p2Lane; } }
+
+        // GIMMIK - BPM, STOP EVENTS //
+        private readonly SortedDictionary<double, BPM> bpmEvents = new SortedDictionary<double, BPM>();
+        public SortedDictionary<double, BPM> BpmEvents { get { return bpmEvents; } }
+
+        private readonly SortedDictionary<double, Stop> stopEvents = new SortedDictionary<double, Stop>();
+        public SortedDictionary<double, Stop> StopEvents { get { return stopEvents; } }
+
+        // BGA EVENT //
+        // 메인 BGA채널
+        private readonly SortedDictionary<double, BGA> bgaEvents = new SortedDictionary<double, BGA>();
+        public SortedDictionary<double, BGA> BGAEvents { get { return bgaEvents; } }
+        // 메인 위에 올라가는 레이어 채널
+        private readonly SortedDictionary<double, BGA> layerBGAEvents = new SortedDictionary<double, BGA>();
+        public SortedDictionary<double, BGA> LayerBGAEvents { get { return layerBGAEvents; } }
+        // 미스레이어
+        private readonly SortedDictionary<double, BGA> poorBga = new SortedDictionary<double, BGA>();
+        public SortedDictionary<double, BGA> PoorBGA { get { return poorBga; } }
+
+        public float PrevBeat { get; set; }
+
+        public void SetPrevBeat(float prevBeat)
+        {
+            PrevBeat = prevBeat;
         }
 
         /// <summary>
         /// 해당 마디의 비트를 지정합니다.
         /// </summary>
-        /// <param name="measureBeat">지정하고 싶은 비트의 수 (4/4 박자는 1.0)</param>
-        public void SetBeat(float measureBeat) => MeasureBeat = measureBeat;
+        /// <param name="scale">지정하고 싶은 비트의 수 (4/4 박자는 1.0)</param>
+        public void SetScale(float scale) => Scale = scale;
 
-        public double GetLastBpmChangeTiming()
-        {
-            double lastTiming = 0;
-
-            if (bpmEvent.Length > 1) 
-            { 
-                for (int i = 0; i < bpmEvent.Length; i++) 
-                {
-                    lastTiming += bpmEvent[i].Timing;
-                }
-            }
-            else
-            {
-                lastTiming = 0;
-            }
-
-            return lastTiming;
-        }
-        
         /// <summary>
-        /// 이게맞는결과물 BPM이벤트 추가하기
+        /// BGM 채널에 키음을 할당합니다.
         /// </summary>
-        /// <param name="measure"></param>
-        /// <param name="currentBeat"></param>
-        /// <param name="totalBeat"></param>
-        /// <param name="prevBpm"></param>
-        /// <param name="targetBpm"></param>
-        public void AddBPMChange(int measure, int currentBeat, int totalBeat, double prevBpm, double targetBpm)
+        /// <param name="beat">비트</param>
+        /// <param name="wav">재생할 키음</param>
+        public void AddBGM(float beat, int wav)
         {
-            AddBPMChange(currentBeat, totalBeat, prevBpm, targetBpm);
-            // DEBUG //
-            float calculatedBeat = (float)currentBeat / totalBeat * 4.0f * MeasureBeat;
-            float totalMeasureBeat = 4 * MeasureBeat;
-            double maxTiming = 60000 / prevBpm;
-
-            float position = calculatedBeat / totalMeasureBeat;
-            double timing = maxTiming * (position);
-            Console.WriteLine($"{measure}번의 비트는 {MeasureBeat} / {measure}번째에 추가할 이벤트의 비트는 {calculatedBeat} / {totalMeasureBeat} = {position}");
-            Console.WriteLine($"{measure}번에 추가될 시간은 {timing} / 기존 bpm은 {prevBpm} / 변경될 bpm은 {targetBpm}");
-            Console.WriteLine($"-----------------------------------------------------------------------------------------");
         }
 
-        public void AddBPMChange(int currentBeat, int totalBeat, double prevBpm, double targetBpm)
+        /// <summary>
+        /// 해당 비트에 BPM 변경 이벤트를 추가합니다.
+        /// </summary>
+        /// <param name="beat">비트</param>
+        /// <param name="newBpm">변경하려고 하는 BPM</param>
+        public void AddBPMEvent(float beat, double newBpm)
         {
-            Array.Resize(ref bpmEvent, bpmEvent.Length + 1);
-            int targetIndex = bpmEvent.Length - 1;
-            float calculatedBeat = (float)currentBeat / totalBeat * 4.0f * MeasureBeat;
-            float totalMeasureBeat = 4 * MeasureBeat;
-            double maxTiming = 60000 / prevBpm;
-
-            float position = calculatedBeat / totalMeasureBeat;
-            double timing = maxTiming * (position);
-
-            bpmEvent[targetIndex] = new BPM(position, targetBpm);
+            bpmEvents.Add(beat, new BPM(newBpm));
         }
 
-        public void AddBGA(int currentBeat, int totalBeat, int bmp)
+        /// <summary>
+        /// 해당 비트에 정지 기믹을 추가합니다
+        /// </summary>
+        /// <param name="beat">비트</param>
+        /// <param name="stopDuration">정지하고 싶은 시간</param>
+        public void AddStopEvent(float beat, double stopDuration)
         {
-            float position = currentBeat / (totalBeat * MeasureBeat);
+            stopEvents.Add(beat, new Stop(stopDuration));
         }
 
-        public void AddStopEvent(int beat, double stopDuration)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="beat"></param>
+        /// <param name="bmp"></param>
+        public void AddBGA(float beat, int bmp)
         {
-
+            //bgaEvents.Add(beat, new BGA(bmp));
         }
 
-        public void AddNotes(int line, int currentBeat, int totalBeat, double bpm, int wav)
+        /// <summary>
+        /// 해당 라인에 노트 채널을 초기화합니다.
+        /// </summary>
+        /// <param name="playerSide">플레이 영역 위치(1p / 2p)</param>
+        /// <param name="lane">할당하고 싶은 키</param>
+        private void ExtendNoteLine(Define.BMSObject.PlayerSide playerSide, int lane)
         {
-            
+            switch (playerSide)
+            {
+                case Define.BMSObject.PlayerSide.P1:
+                    if (!p1Lane.ContainsKey(lane))
+                        p1Lane.Add(lane, new SortedDictionary<double, Note>());
+                    break;
+                case Define.BMSObject.PlayerSide.P2:
+                    if (!p2Lane.ContainsKey(lane))
+                        p2Lane.Add(lane, new SortedDictionary<double, Note>());
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// 해당 비트에 노트를 추가합니다.
+        /// </summary>
+        /// <param name="line">할당하고 싶은 키</param>
+        /// <param name="beat">비트</param>
+        /// <param name="wav">키음</param>
+        /// <param name="playerSide">플레이 영역 위치(1p / 2p)</param>
+        public void AddNotes(int line, float beat, int wav, Define.BMSObject.PlayerSide playerSide)
+        {
+            ExtendNoteLine(playerSide, line);
+
+            switch (playerSide)
+            {
+                case Define.BMSObject.PlayerSide.P1:
+                    //p1Lane[line].Add(beat, new Note());
+                    break;
+                case Define.BMSObject.PlayerSide.P2:
+
+                    break;
+            }
         }
     }
 }

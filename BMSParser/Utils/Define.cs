@@ -94,7 +94,7 @@ namespace BMSParser
                 PMS
             }
 
-            public static Dictionary<BMSKey, KeyMap> KeyMapTable = new Dictionary<BMSKey, KeyMap>()
+            public static Dictionary<BMSKey, KeyMap> SinglePlayKeyMap = new Dictionary<BMSKey, KeyMap>()
             {
                 {
                     BMSKey.BMS_5K_ONLY, new KeyMap(new int[] { 0, 1, 2, 3, 4 }, new int[0], new int[0])
@@ -110,14 +110,32 @@ namespace BMSParser
                 },
                 {
                     BMSKey.PMS, new KeyMap(new int[] { 0, 1, 2, 3, 4, 11, 12, 13, 14 }, new int[0], new int[0])
-                },
-                {
-                    BMSKey.BMS_10K, new KeyMap(new int[] { 0, 1, 2, 3, 4, 10, 11, 12, 13, 14 }, new int[] { 5, 15 }, new int[0])
-                },
-                {
-                    BMSKey.BMS_14K, new KeyMap(new int[] { 0, 1, 2, 3, 4, 7, 8, 10, 11, 12, 13, 14, 17, 18 }, new int[] { 5, 15 }, new int[0])
                 }
             };
+        }
+
+        public class BMSObject
+        {
+            public enum BGA
+            {
+                BASE,
+                LAYER,
+                POOR
+            }
+
+            public enum PlayerSide
+            {
+                P1,
+                P2
+            }
+
+            public enum NoteType
+            {
+                NORMAL_NOTE,
+                LN_START,
+                LN_END,
+                LANDMINE
+            }
         }
     }
 }

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using static BMSParser.Define.BMSModel;
@@ -172,7 +173,7 @@ namespace BMSParser
                                 decodedStopKey = Util.Decode.DecodeBase36(stopKey);
                             }
 
-                            model.StopList[decodedStopKey] = stop;
+                            model.StopList[decodedStopKey] = stop / 192;
                         }
 
                         if (key.StartsWith("BPM"))
@@ -182,7 +183,7 @@ namespace BMSParser
                                 double.TryParse(value, out double bpm);
                                 model.Bpm = bpm;
                                 model.TimeLine.ExtendMeasure(0);
-                                model.TimeLine.Measures[0].AddBPMChange(0, 4, bpm, bpm);
+                                model.TimeLine.Measures[0].AddBPMEvent(0, bpm);
                             }
                             else
                             {
@@ -220,14 +221,52 @@ namespace BMSParser
                             int measure = int.Parse(mainDataHeader.Substring(0, 3));
                             int channel = (int)Util.Decode.DecodeBase36(mainDataHeader.Substring(3));
 
-                            model.TimeLine.AddBMSObject(measure, channel, mainDataValue, model);
+                            model.TimeLine.AssignObjectsBeat(measure, channel, mainDataValue, model);
                         }
                         #endregion
                     }
                 } while (!reader.EndOfStream);
+
+                BMSKey p1Key = ValidateKey(model.TimeLine.assigned1PKeys);
+                BMSKey p2Key = ValidateKey(model.TimeLine.assigned2PKeys);
+
+                // p2가 있으면서 p1이 없으면 p1으로 이동
+                if (p2Key != BMSKey.UNKNOWN && p1Key == BMSKey.UNKNOWN)
+                {
+                    p1Key = p2Key;
+                    p2Key = BMSKey.UNKNOWN;
+                    model.TimeLine.assigned1PKeys = model.TimeLine.assigned2PKeys;
+                    model.TimeLine.assigned2PKeys = new bool[0];
+                    model.Mode = p1Key;
+                }
+                else if (p1Key != BMSKey.UNKNOWN && p2Key == BMSKey.UNKNOWN)
+                {
+                    model.Mode = p1Key;
+                }
+                
+                // p1과 p2가 동시에 할당되어 있다면 DP로 인식
+                if (p1Key != BMSKey.UNKNOWN && p2Key != BMSKey.UNKNOWN)
+                {
+                    if (p1Key == BMSKey.BMS_5K || p1Key == BMSKey.BMS_5K_ONLY || p2Key == BMSKey.BMS_5K || p2Key == BMSKey.BMS_5K_ONLY)
+                    {
+                        model.Mode = BMSKey.BMS_10K;
+                    }
+                    else if (p1Key == BMSKey.BMS_5K || p1Key == BMSKey.BMS_5K_ONLY || p2Key == BMSKey.BMS_5K || p2Key == BMSKey.BMS_5K_ONLY)
+                    {
+                        model.Mode = BMSKey.BMS_14K;
+                    }
+                }
+
+                Console.WriteLine($"{model.Mode}");
             }
 
-            foreach (KeyValuePair<BMSKey, KeyMap> entry in KeyMapTable)
+            return model;
+        }
+
+        private BMSKey ValidateKey(bool[] assignedKeys)
+        {
+            BMSKey checkedKey = BMSKey.UNKNOWN;
+            foreach (KeyValuePair<BMSKey, KeyMap> entry in SinglePlayKeyMap)
             {
                 BMSKey key = entry.Key;
                 KeyMap map = entry.Value;
@@ -239,19 +278,19 @@ namespace BMSParser
                 for (int i = 0; i < map.Keyboard.Length; i++)
                 {
                     int targetIndex = map.Keyboard[i];
-                    if (targetIndex > model.TimeLine.assignedKeys.Length - 1 || model.TimeLine.assignedKeys[targetIndex] == false)
+                    if (targetIndex > assignedKeys.Length - 1 || assignedKeys[targetIndex] == false)
                     {
                         isKeyboardCorrect = false;
                         break;
                     }
 
-                    if (model.TimeLine.assignedKeys[targetIndex] == false)
+                    if (assignedKeys[targetIndex] == false)
                     {
-                        isKeyboardCorrect = model.TimeLine.assignedKeys[targetIndex];
+                        isKeyboardCorrect = assignedKeys[targetIndex];
                         break;
                     }
 
-                    isKeyboardCorrect = model.TimeLine.assignedKeys[targetIndex];
+                    isKeyboardCorrect = assignedKeys[targetIndex];
                 }
                 if (map.Keyboard.Length == 0)
                     isKeyboardCorrect = true;
@@ -259,13 +298,13 @@ namespace BMSParser
                 for (int i = 0; i < map.Scratch.Length; i++)
                 {
                     int targetIndex = map.Scratch[i];
-                    if (targetIndex > model.TimeLine.assignedKeys.Length - 1 || model.TimeLine.assignedKeys[targetIndex] == false)
+                    if (targetIndex > assignedKeys.Length - 1 || assignedKeys[targetIndex] == false)
                     {
                         isScratchKeyCorrect = false;
                         break;
                     }
 
-                    isScratchKeyCorrect = model.TimeLine.assignedKeys[targetIndex];
+                    isScratchKeyCorrect = assignedKeys[targetIndex];
                 }
                 if (map.Scratch.Length == 0)
                     isScratchKeyCorrect = true;
@@ -273,24 +312,24 @@ namespace BMSParser
                 for (int i = 0; i < map.FootPedal.Length; i++)
                 {
                     int targetIndex = map.Keyboard[i];
-                    if (targetIndex > model.TimeLine.assignedKeys.Length - 1 || model.TimeLine.assignedKeys[targetIndex] == false)
+                    if (targetIndex > assignedKeys.Length - 1 || assignedKeys[targetIndex] == false)
                     {
                         isFootPedalKeyCorrect = false;
                         break;
                     }
 
-                    isFootPedalKeyCorrect = model.TimeLine.assignedKeys[targetIndex];
+                    isFootPedalKeyCorrect = assignedKeys[targetIndex];
                 }
                 if (map.FootPedal.Length == 0)
                     isFootPedalKeyCorrect = true;
 
-                if (isKeyboardCorrect && isScratchKeyCorrect && isFootPedalKeyCorrect) 
+                if (isKeyboardCorrect && isScratchKeyCorrect && isFootPedalKeyCorrect)
                 {
-                    model.Mode = key;
+                    checkedKey = key;
                 }
             }
 
-            return model;
+            return checkedKey;
         }
 
         private delegate void CommandRunner(BMSModel model, string value);
