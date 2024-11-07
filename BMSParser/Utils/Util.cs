@@ -21,10 +21,10 @@ namespace BMSParser
                 return s.All(c => char.IsDigit(c) || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'));
             }
 
-            public static long DecodeBase16(string s)
+            public static int DecodeBase16(string s)
             {
                 const string chars = "0123456789ABCDEF";
-                long result = 0;
+                int result = 0;
 
                 foreach (char c in s)
                 {
@@ -34,10 +34,10 @@ namespace BMSParser
                 return result;
             }
 
-            public static long DecodeBase36(string s)
+            public static int DecodeBase36(string s)
             {
                 const string chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-                long result = 0;
+                int result = 0;
 
                 foreach (char c in s)
                 {
@@ -47,10 +47,10 @@ namespace BMSParser
                 return result;
             }
 
-            public static long DecodeBase62(string s)
+            public static int DecodeBase62(string s)
             {
                 const string chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-                long result = 0;
+                int result = 0;
 
                 foreach (char c in s)
                 {

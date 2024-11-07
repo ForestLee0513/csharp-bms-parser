@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using static BMSParser.Define.TimeLine;
 
 namespace BMSParser
@@ -33,6 +34,12 @@ namespace BMSParser
                 }
             }
         }
+
+        /// <summary>
+        /// 지금까지 추가된 총 비트의 수를 값으로 반환
+        /// </summary>
+        /// <param name="measure">확인하고 싶은 마디의 마지막 범위</param>
+        /// <returns></returns>
         public float GetPreviousTotalScales(int measure)
         {
             float sum = 0;
@@ -80,24 +87,44 @@ namespace BMSParser
 
                     if (Util.Decode.DecodeBase16(splittedValue) < 256)
                     {
-                        Console.WriteLine($"BPM HEX | {measure} {beat}");
                         measures[measure].AddBPMEvent(beat, Util.Decode.DecodeBase16(splittedValue));
                     }
                 }
 
                 if ((Channel)channel == Channel.BGA_BASE)
                 {
-
+                    if (model.Base == Define.BMSModel.Base.BASE62)
+                    {
+                        measures[measure].AddBGA(beat, Util.Decode.DecodeBase62(splittedValue), Define.BMSObject.BGA.BASE);
+                    }
+                    else
+                    {
+                        measures[measure].AddBGA(beat, Util.Decode.DecodeBase36(splittedValue), Define.BMSObject.BGA.BASE);
+                    }
                 }
 
                 if ((Channel)channel == Channel.BGA_POOR)
                 {
-
+                    if (model.Base == Define.BMSModel.Base.BASE62)
+                    {
+                        measures[measure].AddBGA(beat, Util.Decode.DecodeBase62(splittedValue), Define.BMSObject.BGA.POOR);
+                    }
+                    else
+                    {
+                        measures[measure].AddBGA(beat, Util.Decode.DecodeBase36(splittedValue), Define.BMSObject.BGA.POOR);
+                    }
                 }
 
                 if ((Channel)channel == Channel.BGA_LAYER)
                 {
-
+                    if (model.Base == Define.BMSModel.Base.BASE62)
+                    {
+                        measures[measure].AddBGA(beat, Util.Decode.DecodeBase62(splittedValue), Define.BMSObject.BGA.LAYER);
+                    }
+                    else
+                    {
+                        measures[measure].AddBGA(beat, Util.Decode.DecodeBase36(splittedValue), Define.BMSObject.BGA.LAYER);
+                    }
                 }
 
                 if ((Channel)channel == Channel.EXBPM)
@@ -107,13 +134,10 @@ namespace BMSParser
 
                     if (model.Base == Define.BMSModel.Base.BASE62)
                     {
-                        Console.WriteLine($"EX BASE 62 | {measure} {beat}");
                         measures[measure].AddBPMEvent(beat, model.BpmList[Util.Decode.DecodeBase62(splittedValue)]);
                     }
                     else
                     {
-                        Console.WriteLine($"EX BASE 36 | {measure} {beat}");
-
                         measures[measure].AddBPMEvent(beat, model.BpmList[Util.Decode.DecodeBase36(splittedValue)]);
                     }
                 }
@@ -127,12 +151,10 @@ namespace BMSParser
 
                     if (model.Base == Define.BMSModel.Base.BASE62)
                     {
-                        Console.WriteLine($"STOP 36 | {measure} {beat}");
                         measures[measure].AddStopEvent(beat, model.BpmList[Util.Decode.DecodeBase62(splittedValue)]);
                     }
                     else
                     {
-                        Console.WriteLine($"STOP 36 | {measure} {beat}");
                         measures[measure].AddStopEvent(beat, model.BpmList[Util.Decode.DecodeBase36(splittedValue)]);
                     }
                 }

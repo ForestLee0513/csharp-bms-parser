@@ -219,7 +219,7 @@ namespace BMSParser
                             string mainDataValue = mainDataKeyValuePair[1];
 
                             int measure = int.Parse(mainDataHeader.Substring(0, 3));
-                            int channel = (int)Util.Decode.DecodeBase36(mainDataHeader.Substring(3));
+                            int channel = Util.Decode.DecodeBase36(mainDataHeader.Substring(3));
 
                             model.TimeLine.AssignObjectsBeat(measure, channel, mainDataValue, model);
                         }
@@ -227,6 +227,7 @@ namespace BMSParser
                     }
                 } while (!reader.EndOfStream);
 
+                #region Validate Key Mode
                 BMSKey p1Key = ValidateKey(model.TimeLine.assigned1PKeys);
                 BMSKey p2Key = ValidateKey(model.TimeLine.assigned2PKeys);
 
@@ -256,8 +257,15 @@ namespace BMSParser
                         model.Mode = BMSKey.BMS_14K;
                     }
                 }
+                #endregion
 
-                Console.WriteLine($"{model.Mode}");
+                #region Calculate Object Timings
+                // Assign previous beats
+                for (int i = 0; i < model.TimeLine.Measures.Length; i++)
+                {
+                    model.TimeLine.Measures[i].SetPrevBeat(model.TimeLine.GetPreviousTotalScales(i));
+                }
+                #endregion
             }
 
             return model;
@@ -474,7 +482,7 @@ namespace BMSParser
                 {
                     try
                     {
-                        long decodedLNOBJKey;
+                        int decodedLNOBJKey;
                         if (model.Base == Base.BASE62)
                         {
                             decodedLNOBJKey = Util.Decode.DecodeBase62(value);
@@ -484,7 +492,7 @@ namespace BMSParser
                             decodedLNOBJKey = Util.Decode.DecodeBase36(value);
                         }
 
-                        model.Lnobj = (int)decodedLNOBJKey;
+                        model.Lnobj = decodedLNOBJKey;
                     }
                     catch
                     {

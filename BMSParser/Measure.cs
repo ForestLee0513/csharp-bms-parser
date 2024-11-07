@@ -83,8 +83,20 @@ namespace BMSParser
         /// </summary>
         /// <param name="beat"></param>
         /// <param name="bmp"></param>
-        public void AddBGA(float beat, int bmp)
+        public void AddBGA(float beat, int bmp, Define.BMSObject.BGA bgaType)
         {
+            switch(bgaType)
+            {
+                case Define.BMSObject.BGA.BASE:
+                    bgaEvents.Add(beat, new BGA(bmp));
+                    break;
+                case Define.BMSObject.BGA.LAYER:
+                    layerBGAEvents.Add(beat, new BGA(bmp));
+                    break;
+                case Define.BMSObject.BGA.POOR:
+                    poorBga.Add(beat, new BGA(bmp));
+                    break;
+            }
             //bgaEvents.Add(beat, new BGA(bmp));
         }
 
