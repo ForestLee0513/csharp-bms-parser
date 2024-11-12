@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Security.Cryptography;
 using System.Text;
 using static BMSParser.Define.BMSModel;
 using static BMSParser.Define.TimeLine;
@@ -266,6 +262,8 @@ namespace BMSParser
             {
                 model.TimeLine.Measures[i].SetPrevBeat(model.TimeLine.GetPreviousTotalScales(i));
             }
+
+            Console.WriteLine(model.TimeLine.GetBPM(30, 15.25));
             #endregion
 
             return model;

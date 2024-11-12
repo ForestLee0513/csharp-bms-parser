@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Numerics;
 using System.Security.Authentication.ExtendedProtection;
 namespace BMSParser
@@ -56,6 +57,12 @@ namespace BMSParser
         /// <param name="wav">재생할 키음</param>
         public void AddBGM(float beat, int wav)
         {
+            if (!bgm.ContainsKey(beat))
+            {
+                bgm.Add(beat, new List<NormalNote>());
+            }
+
+            bgm[beat].Add(new NormalNote(wav));
         }
 
         /// <summary>
@@ -69,7 +76,7 @@ namespace BMSParser
         }
 
         /// <summary>
-        /// 해당 비트에 정지 기믹을 추가합니다
+        /// 해당 비트에 정지 기믹을 추가합니다.
         /// </summary>
         /// <param name="beat">비트</param>
         /// <param name="stopDuration">정지하고 싶은 시간</param>
@@ -79,10 +86,11 @@ namespace BMSParser
         }
 
         /// <summary>
-        /// 
+        /// 해당 비트에 BGA 애니메이션을 추가합니다.
         /// </summary>
-        /// <param name="beat"></param>
-        /// <param name="bmp"></param>
+        /// <param name="beat">비트</param>
+        /// <param name="bmp">BGA 시퀀스 키</param>
+        /// <param name="bgaType">BGA의 종류를 정의</param>
         public void AddBGA(float beat, int bmp, Define.BMSObject.BGA bgaType)
         {
             switch(bgaType)
@@ -97,7 +105,6 @@ namespace BMSParser
                     poorBga.Add(beat, new BGA(bmp));
                     break;
             }
-            //bgaEvents.Add(beat, new BGA(bmp));
         }
 
         /// <summary>
@@ -127,14 +134,14 @@ namespace BMSParser
         /// <param name="beat">비트</param>
         /// <param name="wav">키음</param>
         /// <param name="playerSide">플레이 영역 위치(1p / 2p)</param>
-        public void AddNotes(int line, float beat, int wav, Define.BMSObject.PlayerSide playerSide)
+        public void AddNotes(int line, float beat, int wav, int lnobj, Define.BMSObject.PlayerSide playerSide)
         {
             ExtendNoteLine(playerSide, line);
 
             switch (playerSide)
             {
                 case Define.BMSObject.PlayerSide.P1:
-                    //p1Lane[line].Add(beat, new Note());
+                    //p1Lane[line].Add(beat, new Note(wav));
                     break;
                 case Define.BMSObject.PlayerSide.P2:
 

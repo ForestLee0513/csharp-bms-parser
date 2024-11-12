@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using static BMSParser.Define.TimeLine;
 
@@ -51,6 +53,24 @@ namespace BMSParser
             return sum;
         }
 
+        public double GetBPM(int measureToLookUp, double beatToLookUp)
+        {
+            double bpm = 0;
+
+            for (int i = 0; i <= measureToLookUp; i++)
+            {
+                foreach (KeyValuePair<double, BPM> bpmEvent in measures[i].BpmEvents)
+                {
+                    if (measureToLookUp == i && beatToLookUp.CompareTo(bpmEvent.Key) < 0)
+                        break;
+
+                    bpm = bpmEvent.Value.Bpm;
+                }
+            }
+
+            return bpm;
+        }
+
         /// <summary>
         /// BMS 이벤트의 비트 추가
         /// </summary>
@@ -77,7 +97,17 @@ namespace BMSParser
 
                 if ((Channel)channel == Channel.BGM)
                 {
+                    if (splittedValue == "00")
+                        continue;
 
+                    if (model.Base == Define.BMSModel.Base.BASE62)
+                    {
+                        measures[measure].AddBGM(beat, Util.Decode.DecodeBase62(splittedValue));
+                    }
+                    else
+                    {
+                        measures[measure].AddBGM(beat, Util.Decode.DecodeBase36(splittedValue));
+                    }
                 }
 
                 if ((Channel)channel == Channel.BPM_CHANGE)
