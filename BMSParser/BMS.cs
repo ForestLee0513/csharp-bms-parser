@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using static BMSParser.Define.BMSModel;
-using static BMSParser.Define.TimeLine;
+using static BMSParser.Define.PatternProcessor;
 
 namespace BMSParser
 {
@@ -178,8 +180,8 @@ namespace BMSParser
                             {
                                 double.TryParse(value, out double bpm);
                                 model.Bpm = bpm;
-                                model.TimeLine.ExtendMeasure(0);
-                                model.TimeLine.Measures[0].AddBPMEvent(0, bpm);
+                                model.PatternProcessor.ExtendMeasure(0);
+                                model.PatternProcessor.Measures[0].AddBPMEvent(0, bpm);
                             }
                             else
                             {
@@ -197,6 +199,23 @@ namespace BMSParser
 
                                 model.BpmList[decodedBpmKey] = bpm;
                             }
+                        }
+
+                        if (key.StartsWith("SCROLL"))
+                        {
+                            double.TryParse(value, out double scroll);
+                            string scrollKey = key.Substring(6);
+                            long decodedScrollKey;
+                            if (model.Base == Base.BASE62)
+                            {
+                                decodedScrollKey = Util.Decode.DecodeBase62(scrollKey);
+                            }
+                            else
+                            {
+                                decodedScrollKey = Util.Decode.DecodeBase36(scrollKey);
+                            }
+
+                            model.ScrollList[decodedScrollKey] = scroll;
                         }
 
                         if (headerCommands.ContainsKey(key))
@@ -217,7 +236,7 @@ namespace BMSParser
                             int measure = int.Parse(mainDataHeader.Substring(0, 3));
                             int channel = Util.Decode.DecodeBase36(mainDataHeader.Substring(3));
 
-                            model.TimeLine.AssignObjectsBeat(measure, channel, mainDataValue, model);
+                            model.PatternProcessor.AssignObjectsBeat(measure, channel, mainDataValue, model);
                         }
                         #endregion
                     }
@@ -225,16 +244,16 @@ namespace BMSParser
             }
 
             #region Validate Key Mode
-            BMSKey p1Key = ValidateKey(model.TimeLine.assigned1PKeys);
-            BMSKey p2Key = ValidateKey(model.TimeLine.assigned2PKeys);
+            BMSKey p1Key = ValidateKey(model.PatternProcessor.assigned1PKeys);
+            BMSKey p2Key = ValidateKey(model.PatternProcessor.assigned2PKeys);
 
             // p2가 있으면서 p1이 없으면 p1으로 이동
             if (p2Key != BMSKey.UNKNOWN && p1Key == BMSKey.UNKNOWN)
             {
                 p1Key = p2Key;
                 p2Key = BMSKey.UNKNOWN;
-                model.TimeLine.assigned1PKeys = model.TimeLine.assigned2PKeys;
-                model.TimeLine.assigned2PKeys = new bool[0];
+                model.PatternProcessor.assigned1PKeys = model.PatternProcessor.assigned2PKeys;
+                model.PatternProcessor.assigned2PKeys = new bool[0];
                 model.Mode = p1Key;
             }
             else if (p1Key != BMSKey.UNKNOWN && p2Key == BMSKey.UNKNOWN)
@@ -254,17 +273,15 @@ namespace BMSParser
                     model.Mode = BMSKey.BMS_14K;
                 }
             }
-            #endregion
 
-            #region Calculate Object Timings
-            // Assign previous beats
-            for (int i = 0; i < model.TimeLine.Measures.Length; i++)
+            #endregion
+            Timestamp baseTimestamp = new Timestamp(0)
             {
-                model.TimeLine.Measures[i].SetPrevBeat(model.TimeLine.GetPreviousTotalScales(i));
-            }
+                Bpm = model.Bpm
+            };
 
-            Console.WriteLine(model.TimeLine.GetBPM(30, 15.25));
-            #endregion
+            model.PatternProcessor.Timestamp.Add(0, baseTimestamp);
+            model.PatternProcessor.CalculateTiming();
 
             return model;
         }

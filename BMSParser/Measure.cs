@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Numerics;
-using System.Security.Authentication.ExtendedProtection;
 namespace BMSParser
 {
     public class Measure
@@ -19,12 +17,14 @@ namespace BMSParser
         private readonly Dictionary<int, SortedDictionary<double, Note>> p2Lane = new Dictionary<int, SortedDictionary<double, Note>>();
         public Dictionary<int, SortedDictionary<double, Note>> P2Lane { get { return p2Lane; } }
 
-        // GIMMIK - BPM, STOP EVENTS //
+        // GIMMIK - BPM, STOP, SCROLL EVENTS //
         private readonly SortedDictionary<double, BPM> bpmEvents = new SortedDictionary<double, BPM>();
         public SortedDictionary<double, BPM> BpmEvents { get { return bpmEvents; } }
 
         private readonly SortedDictionary<double, Stop> stopEvents = new SortedDictionary<double, Stop>();
         public SortedDictionary<double, Stop> StopEvents { get { return stopEvents; } }
+        private readonly SortedDictionary<double, Scroll> scrollevents = new SortedDictionary<double, Scroll>();
+        public SortedDictionary<double, Scroll> ScrollEvents { get { return scrollevents; } }
 
         // BGA EVENT //
         // 메인 BGA채널
@@ -55,7 +55,7 @@ namespace BMSParser
         /// </summary>
         /// <param name="beat">비트</param>
         /// <param name="wav">재생할 키음</param>
-        public void AddBGM(float beat, int wav)
+        public void AddBGM(double beat, int wav)
         {
             if (!bgm.ContainsKey(beat))
             {
@@ -70,7 +70,7 @@ namespace BMSParser
         /// </summary>
         /// <param name="beat">비트</param>
         /// <param name="newBpm">변경하려고 하는 BPM</param>
-        public void AddBPMEvent(float beat, double newBpm)
+        public void AddBPMEvent(double beat, double newBpm)
         {
             bpmEvents.Add(beat, new BPM(newBpm));
         }
@@ -80,7 +80,7 @@ namespace BMSParser
         /// </summary>
         /// <param name="beat">비트</param>
         /// <param name="stopDuration">정지하고 싶은 시간</param>
-        public void AddStopEvent(float beat, double stopDuration)
+        public void AddStopEvent(double beat, double stopDuration)
         {
             stopEvents.Add(beat, new Stop(stopDuration));
         }
@@ -91,7 +91,7 @@ namespace BMSParser
         /// <param name="beat">비트</param>
         /// <param name="bmp">BGA 시퀀스 키</param>
         /// <param name="bgaType">BGA의 종류를 정의</param>
-        public void AddBGA(float beat, int bmp, Define.BMSObject.BGA bgaType)
+        public void AddBGA(double beat, int bmp, Define.BMSObject.BGA bgaType)
         {
             switch(bgaType)
             {
@@ -105,6 +105,11 @@ namespace BMSParser
                     poorBga.Add(beat, new BGA(bmp));
                     break;
             }
+        }
+        
+        public void AddScroll(double beat, double scrollValue)
+        {
+            scrollevents.Add(beat, new Scroll(scrollValue));
         }
 
         /// <summary>
@@ -134,7 +139,7 @@ namespace BMSParser
         /// <param name="beat">비트</param>
         /// <param name="wav">키음</param>
         /// <param name="playerSide">플레이 영역 위치(1p / 2p)</param>
-        public void AddNotes(int line, float beat, int wav, int lnobj, Define.BMSObject.PlayerSide playerSide)
+        public void AddNotes(int line, double beat, int wav, int lnobj, Define.BMSObject.PlayerSide playerSide)
         {
             ExtendNoteLine(playerSide, line);
 

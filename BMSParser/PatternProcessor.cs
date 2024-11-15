@@ -1,20 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using static BMSParser.Define.TimeLine;
+using static BMSParser.Define.PatternProcessor;
 
 namespace BMSParser
 {
-    public class TimeLine
+    public class PatternProcessor
     {
-        // Measure를 1P / 2P를 구분해야 할 듯?
-        // BMS 스펙 상에서 보면 11 ~ 1Z까지 확장되는 경우가 있는데, 모든 이벤트로 분리하지 않더라고 1P와 2P는 분리해야지 확장성 챙길 수 있을 듯 함.
         private Measure[] measures = new Measure[0];
         public Measure[] Measures { get { return measures; } }
         public bool[] assigned1PKeys = new bool[0];
         public bool[] assigned2PKeys = new bool[0];
+
+        // 시간 흐름을 비트로 구분
+        public SortedDictionary<double, Timestamp> Timestamp { get; } = new SortedDictionary<double, Timestamp>();
 
         /// <summary>
         /// 해당 마디가 있는지 확인하고 나서 없으면 해당 마디 + 1 만큼 확장
@@ -42,33 +41,16 @@ namespace BMSParser
         /// </summary>
         /// <param name="measure">확인하고 싶은 마디의 마지막 범위</param>
         /// <returns></returns>
-        public float GetPreviousTotalScales(int measure)
+        public float GetPreviousSection(int measure)
         {
             float sum = 0;
             for (int i = 0; i < measure; i++)
             {
+                //sum += measures[i].Scale * 4.0f;
                 sum += measures[i].Scale;
             }
 
             return sum;
-        }
-
-        public double GetBPM(int measureToLookUp, double beatToLookUp)
-        {
-            double bpm = 0;
-
-            for (int i = 0; i <= measureToLookUp; i++)
-            {
-                foreach (KeyValuePair<double, BPM> bpmEvent in measures[i].BpmEvents)
-                {
-                    if (measureToLookUp == i && beatToLookUp.CompareTo(bpmEvent.Key) < 0)
-                        break;
-
-                    bpm = bpmEvent.Value.Bpm;
-                }
-            }
-
-            return bpm;
         }
 
         /// <summary>
@@ -81,7 +63,6 @@ namespace BMSParser
         public void AssignObjectsBeat(int measure, int channel, string value, BMSModel model)
         {
             ExtendMeasure(measure);
-            int totalBeat = value.Length / 2;
 
             for (int i = 0; i < value.Length - 1; i += 2)
             {
@@ -93,7 +74,7 @@ namespace BMSParser
                     measures[measure].SetScale(measureBeat);
                 }
 
-                float beat = (1.0f * i / 2 / totalBeat) * measures[measure].Scale;
+                double pos = (1.0 * i / 2) / (value.Length / 2);
 
                 if ((Channel)channel == Channel.BGM)
                 {
@@ -102,11 +83,11 @@ namespace BMSParser
 
                     if (model.Base == Define.BMSModel.Base.BASE62)
                     {
-                        measures[measure].AddBGM(beat, Util.Decode.DecodeBase62(splittedValue));
+                        measures[measure].AddBGM(pos, Util.Decode.DecodeBase62(splittedValue));
                     }
                     else
                     {
-                        measures[measure].AddBGM(beat, Util.Decode.DecodeBase36(splittedValue));
+                        measures[measure].AddBGM(pos, Util.Decode.DecodeBase36(splittedValue));
                     }
                 }
 
@@ -117,7 +98,19 @@ namespace BMSParser
 
                     if (Util.Decode.DecodeBase16(splittedValue) < 256)
                     {
-                        measures[measure].AddBPMEvent(beat, Util.Decode.DecodeBase16(splittedValue));
+                        measures[measure].AddBPMEvent(pos, Util.Decode.DecodeBase16(splittedValue));
+                    }
+                }
+
+                if ((Channel)channel == Channel.SCROLL)
+                {
+                    if (model.Base == Define.BMSModel.Base.BASE62)
+                    {
+                        measures[measure].AddScroll(pos, model.ScrollList[Util.Decode.DecodeBase62(splittedValue)]);
+                    }
+                    else
+                    {
+                        measures[measure].AddScroll(pos, model.ScrollList[Util.Decode.DecodeBase36(splittedValue)]);
                     }
                 }
 
@@ -125,11 +118,11 @@ namespace BMSParser
                 {
                     if (model.Base == Define.BMSModel.Base.BASE62)
                     {
-                        measures[measure].AddBGA(beat, Util.Decode.DecodeBase62(splittedValue), Define.BMSObject.BGA.BASE);
+                        measures[measure].AddBGA(pos, Util.Decode.DecodeBase62(splittedValue), Define.BMSObject.BGA.BASE);
                     }
                     else
                     {
-                        measures[measure].AddBGA(beat, Util.Decode.DecodeBase36(splittedValue), Define.BMSObject.BGA.BASE);
+                        measures[measure].AddBGA(pos, Util.Decode.DecodeBase36(splittedValue), Define.BMSObject.BGA.BASE);
                     }
                 }
 
@@ -137,11 +130,11 @@ namespace BMSParser
                 {
                     if (model.Base == Define.BMSModel.Base.BASE62)
                     {
-                        measures[measure].AddBGA(beat, Util.Decode.DecodeBase62(splittedValue), Define.BMSObject.BGA.POOR);
+                        measures[measure].AddBGA(pos, Util.Decode.DecodeBase62(splittedValue), Define.BMSObject.BGA.POOR);
                     }
                     else
                     {
-                        measures[measure].AddBGA(beat, Util.Decode.DecodeBase36(splittedValue), Define.BMSObject.BGA.POOR);
+                        measures[measure].AddBGA(pos, Util.Decode.DecodeBase36(splittedValue), Define.BMSObject.BGA.POOR);
                     }
                 }
 
@@ -149,11 +142,11 @@ namespace BMSParser
                 {
                     if (model.Base == Define.BMSModel.Base.BASE62)
                     {
-                        measures[measure].AddBGA(beat, Util.Decode.DecodeBase62(splittedValue), Define.BMSObject.BGA.LAYER);
+                        measures[measure].AddBGA(pos, Util.Decode.DecodeBase62(splittedValue), Define.BMSObject.BGA.LAYER);
                     }
                     else
                     {
-                        measures[measure].AddBGA(beat, Util.Decode.DecodeBase36(splittedValue), Define.BMSObject.BGA.LAYER);
+                        measures[measure].AddBGA(pos, Util.Decode.DecodeBase36(splittedValue), Define.BMSObject.BGA.LAYER);
                     }
                 }
 
@@ -164,11 +157,11 @@ namespace BMSParser
 
                     if (model.Base == Define.BMSModel.Base.BASE62)
                     {
-                        measures[measure].AddBPMEvent(beat, model.BpmList[Util.Decode.DecodeBase62(splittedValue)]);
+                        measures[measure].AddBPMEvent(pos, model.BpmList[Util.Decode.DecodeBase62(splittedValue)]);
                     }
                     else
                     {
-                        measures[measure].AddBPMEvent(beat, model.BpmList[Util.Decode.DecodeBase36(splittedValue)]);
+                        measures[measure].AddBPMEvent(pos, model.BpmList[Util.Decode.DecodeBase36(splittedValue)]);
                     }
                 }
 
@@ -181,11 +174,11 @@ namespace BMSParser
 
                     if (model.Base == Define.BMSModel.Base.BASE62)
                     {
-                        measures[measure].AddStopEvent(beat, model.BpmList[Util.Decode.DecodeBase62(splittedValue)]);
+                        measures[measure].AddStopEvent(pos, model.StopList[Util.Decode.DecodeBase62(splittedValue)]);
                     }
                     else
                     {
-                        measures[measure].AddStopEvent(beat, model.BpmList[Util.Decode.DecodeBase36(splittedValue)]);
+                        measures[measure].AddStopEvent(pos, model.StopList[Util.Decode.DecodeBase36(splittedValue)]);
                     }
                 }
 
@@ -334,6 +327,79 @@ namespace BMSParser
                     // 노트 추가
                 }
             }
+        }
+    
+        /// <summary>
+        /// 타이밍 계산
+        /// </summary>
+        public void CalculateTiming()
+        {
+            for (int i = 0; i < measures.Length; i++)
+            {
+                IEnumerator<KeyValuePair<double, Stop>> stops = measures[i].StopEvents.GetEnumerator();
+                KeyValuePair<double, Stop>? ste = stops.MoveNext() ? stops.Current : (KeyValuePair<double, Stop>?)null;
+
+                IEnumerator<KeyValuePair<double, BPM>> bpms = measures[i].BpmEvents.GetEnumerator();
+                KeyValuePair<double, BPM>? bce = bpms.MoveNext() ? bpms.Current : (KeyValuePair<double, BPM>?)null;
+
+                IEnumerator<KeyValuePair<double, Scroll>> scrolls = measures[i].ScrollEvents.GetEnumerator();
+                KeyValuePair<double, Scroll>? sce = scrolls.MoveNext() ? scrolls.Current : (KeyValuePair<double, Scroll>?)null;
+
+                double previousSection = GetPreviousSection(i);
+
+                while (ste.HasValue || bce.HasValue || sce.HasValue)
+                {
+                    double bc = bce.HasValue ? bce.Value.Key : 2;
+                    double st = ste.HasValue ? ste.Value.Key : 2;
+                    double sc = sce.HasValue ? sce.Value.Key : 2;
+
+                    if (sc <= st && sc <= bc)
+                    {
+                        double section = previousSection + bc * measures[i].Scale;
+                        Timestamp timestamp = GetTimestamp(section);
+                        timestamp.Scroll = sce.Value.Value.ScrollValue;
+                        sce = scrolls.MoveNext() ? scrolls.Current : (KeyValuePair<double, Scroll>?)null;
+                    }
+                    else if (bc <= st)
+                    {
+                        double section = previousSection + bc * measures[i].Scale;
+                        Timestamp timestamp = GetTimestamp(section);
+                        timestamp.Bpm = bce.Value.Value.Bpm;
+                        bce = bpms.MoveNext() ? bpms.Current : (KeyValuePair<double, BPM>?)null;
+                    }
+                    else if (st <= 1)
+                    {
+                        double section = previousSection + ste.Value.Key * measures[i].Scale;
+                        Timestamp timestamp = GetTimestamp(section);
+                        timestamp.StopDuration = 1000.0 * 60 * 4 * ste.Value.Value.Duration / timestamp.Bpm;
+                        ste = stops.MoveNext() ? stops.Current : (KeyValuePair<double, Stop>?)null;
+                    }
+                }
+            }
+        }
+
+        public Timestamp GetTimestamp(double section)
+        {
+            if (Timestamp.ContainsKey(section))
+            {
+                return Timestamp[section];
+            }
+
+            var le = Timestamp.Where(x => x.Key < section).OrderByDescending(x => x.Key).FirstOrDefault();
+
+            double scroll = le.Value.Scroll;
+            double bpm = le.Value.Bpm;
+            double time = le.Value.Time + le.Value.StopDuration + (240000.0 * (section - le.Key)) / bpm;
+
+            Timestamp newTimestamp = new Timestamp(time)
+            {
+                Scroll = scroll,
+                Bpm = bpm
+            };
+
+            Timestamp[section] = newTimestamp;
+
+            return newTimestamp;
         }
     }
 }

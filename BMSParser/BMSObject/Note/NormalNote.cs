@@ -6,11 +6,5 @@
         {
             KeySound = wav;
         }
-
-        public NormalNote(float beat, int wav)
-        {
-            Beat = beat;
-            KeySound = wav;
-        }
     }
 }

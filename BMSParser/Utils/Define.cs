@@ -29,7 +29,7 @@ namespace BMSParser
             }
         }
 
-        public class TimeLine
+        public class PatternProcessor
         {
             /// <summary>
             /// BMS 파싱 과정에서 정의되는 채널
@@ -45,14 +45,17 @@ namespace BMSParser
                 BGA_LAYER = 7,
                 EXBPM,
                 STOP,
+
                 P1_NORMAL_START_POS = 37,
-                P2_NORMAL_START_POS = 73,
-                P1_INVISIBLE_START_POS = 109,
-                P2_INVISIBLE_START_POS = 145,
-                P1_LONGNOTE_START_POS = 181,
-                P2_LONGNOTE_START_POS = 217,
-                P1_LANDMINE_START_POS = 469,
-                P2_LANDMINE_START_POS = 505,
+                P2_NORMAL_START_POS = 2 * 37,
+                P1_INVISIBLE_START_POS = 3 * 37,
+                P2_INVISIBLE_START_POS = 4 * 37,
+                P1_LONGNOTE_START_POS = 5 * 37,
+                P2_LONGNOTE_START_POS = 6 * 37,
+                P1_LANDMINE_START_POS = 13 * 37,
+                P2_LANDMINE_START_POS = 14 * 37,
+
+                SCROLL = 1020
             }
 
             public class KeyMap

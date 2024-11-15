@@ -1,5 +1,6 @@
-﻿using static BMSParser.Define.BMSModel;
-using static BMSParser.Define.TimeLine;
+﻿using System.Collections.Generic;
+using static BMSParser.Define.BMSModel;
+using static BMSParser.Define.PatternProcessor;
 
 namespace BMSParser
 {
@@ -33,6 +34,7 @@ namespace BMSParser
         public double Bpm { get; set; }
         public double[] BpmList { get; set; } = new double[62 * 62];
         public double[] StopList { get; set; } = new double[62 * 62];
+        public double[] ScrollList { get; set; } = new double[62 * 62];
         public int Lnobj { get; set; } = -1;
         public string[] Wav { get; set; } = new string[62 * 62];
         public string MidiFile { get; set; }
@@ -40,7 +42,8 @@ namespace BMSParser
         #endregion
 
         #region Main Data
-        public TimeLine TimeLine { get; } = new TimeLine();
+        public PatternProcessor PatternProcessor { get; } = new PatternProcessor();
+        public SortedDictionary<double, Timestamp> Timestamp;
         #endregion
     }
 }
