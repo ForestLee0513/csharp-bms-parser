@@ -17,6 +17,28 @@ namespace BMSParser
         private readonly Dictionary<int, SortedDictionary<double, Note>> p2Lane = new Dictionary<int, SortedDictionary<double, Note>>();
         public Dictionary<int, SortedDictionary<double, Note>> P2Lane { get { return p2Lane; } }
 
+        // Long Note //
+        private readonly Dictionary<int, SortedDictionary<double, Note>> p1LongLane = new Dictionary<int, SortedDictionary<double, Note>>();
+        public Dictionary<int, SortedDictionary<double, Note>> P1LongLane { get { return p1LongLane; } }
+
+        private readonly Dictionary<int, SortedDictionary<double, Note>> p2LongLane = new Dictionary<int, SortedDictionary<double, Note>>();
+        public Dictionary<int, SortedDictionary<double, Note>> P2LongLane { get { return p2LongLane; } }
+
+        // Hidden Note //
+        private readonly Dictionary<int, SortedDictionary<double, Note>> p1HiddenLane = new Dictionary<int, SortedDictionary<double, Note>>();
+        public Dictionary<int, SortedDictionary<double, Note>> P1HiddenLane { get { return p1HiddenLane; } }
+
+        private readonly Dictionary<int, SortedDictionary<double, Note>> p2HiddenLane = new Dictionary<int, SortedDictionary<double, Note>>();
+        public Dictionary<int, SortedDictionary<double, Note>> P2HiddenLane { get { return p2HiddenLane; } }
+
+        // Mine Note //
+        private readonly Dictionary<int, SortedDictionary<double, Note>> p1MineLane = new Dictionary<int, SortedDictionary<double, Note>>();
+        public Dictionary<int, SortedDictionary<double, Note>> P1MineLane { get { return p1MineLane; } }
+
+        private readonly Dictionary<int, SortedDictionary<double, Note>> p2MineLane = new Dictionary<int, SortedDictionary<double, Note>>();
+        public Dictionary<int, SortedDictionary<double, Note>> P2MineLane { get { return p2MineLane; } }
+
+
         // GIMMIK - BPM, STOP, SCROLL EVENTS //
         private readonly SortedDictionary<double, BPM> bpmEvents = new SortedDictionary<double, BPM>();
         public SortedDictionary<double, BPM> BpmEvents { get { return bpmEvents; } }
@@ -53,63 +75,63 @@ namespace BMSParser
         /// <summary>
         /// BGM 채널에 키음을 할당합니다.
         /// </summary>
-        /// <param name="beat">비트</param>
+        /// <param name="pos">비트</param>
         /// <param name="wav">재생할 키음</param>
-        public void AddBGM(double beat, int wav)
+        public void AddBGM(double pos, int wav)
         {
-            if (!bgm.ContainsKey(beat))
+            if (!bgm.ContainsKey(pos))
             {
-                bgm.Add(beat, new List<NormalNote>());
+                bgm.Add(pos, new List<NormalNote>());
             }
 
-            bgm[beat].Add(new NormalNote(wav));
+            bgm[pos].Add(new NormalNote(wav));
         }
 
         /// <summary>
         /// 해당 비트에 BPM 변경 이벤트를 추가합니다.
         /// </summary>
-        /// <param name="beat">비트</param>
+        /// <param name="pos">비트</param>
         /// <param name="newBpm">변경하려고 하는 BPM</param>
-        public void AddBPMEvent(double beat, double newBpm)
+        public void AddBPMEvent(double pos, double newBpm)
         {
-            bpmEvents.Add(beat, new BPM(newBpm));
+            bpmEvents.Add(pos, new BPM(newBpm));
         }
 
         /// <summary>
         /// 해당 비트에 정지 기믹을 추가합니다.
         /// </summary>
-        /// <param name="beat">비트</param>
+        /// <param name="pos">비트</param>
         /// <param name="stopDuration">정지하고 싶은 시간</param>
-        public void AddStopEvent(double beat, double stopDuration)
+        public void AddStopEvent(double pos, double stopDuration)
         {
-            stopEvents.Add(beat, new Stop(stopDuration));
+            stopEvents.Add(pos, new Stop(stopDuration));
         }
 
         /// <summary>
         /// 해당 비트에 BGA 애니메이션을 추가합니다.
         /// </summary>
-        /// <param name="beat">비트</param>
+        /// <param name="pos">비트</param>
         /// <param name="bmp">BGA 시퀀스 키</param>
         /// <param name="bgaType">BGA의 종류를 정의</param>
-        public void AddBGA(double beat, int bmp, Define.BMSObject.BGA bgaType)
+        public void AddBGA(double pos, int bmp, Define.BMSObject.BGA bgaType)
         {
             switch(bgaType)
             {
                 case Define.BMSObject.BGA.BASE:
-                    bgaEvents.Add(beat, new BGA(bmp));
+                    bgaEvents.Add(pos, new BGA(bmp));
                     break;
                 case Define.BMSObject.BGA.LAYER:
-                    layerBGAEvents.Add(beat, new BGA(bmp));
+                    layerBGAEvents.Add(pos, new BGA(bmp));
                     break;
                 case Define.BMSObject.BGA.POOR:
-                    poorBga.Add(beat, new BGA(bmp));
+                    poorBga.Add(pos, new BGA(bmp));
                     break;
             }
         }
         
-        public void AddScroll(double beat, double scrollValue)
+        public void AddScroll(double pos, double scrollValue)
         {
-            scrollevents.Add(beat, new Scroll(scrollValue));
+            scrollevents.Add(pos, new Scroll(scrollValue));
         }
 
         /// <summary>
@@ -133,23 +155,141 @@ namespace BMSParser
         }
 
         /// <summary>
+        /// 해당 라인에 롱노트 채널을 초기화합니다.
+        /// </summary>
+        /// <param name="playerSide">플레이 영역 위치(1p / 2p)</param>
+        /// <param name="lane">할당하고 싶은 키</param>
+        private void ExtendLongNoteLine(Define.BMSObject.PlayerSide playerSide, int lane)
+        {
+            switch (playerSide)
+            {
+                case Define.BMSObject.PlayerSide.P1:
+                    if (!p1LongLane.ContainsKey(lane))
+                        p1LongLane.Add(lane, new SortedDictionary<double, Note>());
+                    break;
+                case Define.BMSObject.PlayerSide.P2:
+                    if (!p2LongLane.ContainsKey(lane))
+                        p2LongLane.Add(lane, new SortedDictionary<double, Note>());
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// 해당 라인에 숨겨진 채널을 초기화합니다.
+        /// </summary>
+        /// <param name="playerSide">플레이 영역 위치(1p / 2p)</param>
+        /// <param name="lane">할당하고 싶은 키</param>
+        private void ExtendHiddenNoteLine(Define.BMSObject.PlayerSide playerSide, int lane)
+        {
+            switch (playerSide)
+            {
+                case Define.BMSObject.PlayerSide.P1:
+                    if (!p1HiddenLane.ContainsKey(lane))
+                        p1HiddenLane.Add(lane, new SortedDictionary<double, Note>());
+                    break;
+                case Define.BMSObject.PlayerSide.P2:
+                    if (!p2HiddenLane.ContainsKey(lane))
+                        p2HiddenLane.Add(lane, new SortedDictionary<double, Note>());
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// 해당 라인에 지뢰노트 채널을 초기화합니다.
+        /// </summary>
+        /// <param name="playerSide">플레이 영역 위치(1p / 2p)</param>
+        /// <param name="lane">할당하고 싶은 키</param>
+        private void ExtendMineNoteLine(Define.BMSObject.PlayerSide playerSide, int lane)
+        {
+            switch (playerSide)
+            {
+                case Define.BMSObject.PlayerSide.P1:
+                    if (!p1MineLane.ContainsKey(lane))
+                        p1MineLane.Add(lane, new SortedDictionary<double, Note>());
+                    break;
+                case Define.BMSObject.PlayerSide.P2:
+                    if (!p2MineLane.ContainsKey(lane))
+                        p2MineLane.Add(lane, new SortedDictionary<double, Note>());
+                    break;
+            }
+        }
+
+        /// <summary>
         /// 해당 비트에 노트를 추가합니다.
         /// </summary>
         /// <param name="line">할당하고 싶은 키</param>
-        /// <param name="beat">비트</param>
-        /// <param name="wav">키음</param>
+        /// <param name="pos">비트</param>
+        /// <param name="wav">키음 ID</param>
         /// <param name="playerSide">플레이 영역 위치(1p / 2p)</param>
-        public void AddNotes(int line, double beat, int wav, int lnobj, Define.BMSObject.PlayerSide playerSide)
+        public void AddNotes(int line, double pos, int wav, Define.BMSObject.PlayerSide playerSide)
         {
             ExtendNoteLine(playerSide, line);
 
             switch (playerSide)
             {
                 case Define.BMSObject.PlayerSide.P1:
-                    //p1Lane[line].Add(beat, new Note(wav));
+                    p1Lane[line].Add(pos, new NormalNote(wav));
+                    break;
+                case Define.BMSObject.PlayerSide.P2:
+                    p2Lane[line].Add(pos, new NormalNote(wav));
+                    break;
+            }
+        }
+        public void AddLongNotes(int line, double pos, int wav, Define.BMSObject.PlayerSide playerSide)
+        {
+            ExtendLongNoteLine(playerSide, line);
+
+            switch (playerSide)
+            {
+                case Define.BMSObject.PlayerSide.P1:
+                    //p1Lane[line].Add(pos, new NormalNote(wav));
                     break;
                 case Define.BMSObject.PlayerSide.P2:
 
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// 해당 비트에 숨겨진 노트를 추가합니다.
+        /// </summary>
+        /// <param name="line">할당하고 싶은 키</param>
+        /// <param name="pos">비트</param>
+        /// <param name="wav">키음 ID</param>
+        /// <param name="playerSide">플레이 영역 위치(1p / 2p)</param>
+        public void AddHiddenNotes(int line, double pos, int wav, Define.BMSObject.PlayerSide playerSide)
+        {
+            ExtendHiddenNoteLine(playerSide, line);
+
+            switch (playerSide)
+            {
+                case Define.BMSObject.PlayerSide.P1:
+                    p1HiddenLane[line].Add(pos, new NormalNote(wav));
+                    break;
+                case Define.BMSObject.PlayerSide.P2:
+                    p2HiddenLane[line].Add(pos, new NormalNote(wav));
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// 해당 비트에 지뢰 노트를 추가합니다.
+        /// </summary>
+        /// <param name="line">할당하고 싶은 키</param>
+        /// <param name="pos">비트</param>
+        /// <param name="wav">키음 ID</param>
+        /// <param name="playerSide">플레이 영역 위치(1p / 2p)</param>
+        public void AddMineNotes(int line, double pos, int wav, Define.BMSObject.PlayerSide playerSide)
+        {
+            ExtendMineNoteLine(playerSide, line);
+
+            switch (playerSide)
+            {
+                case Define.BMSObject.PlayerSide.P1:
+                    p1MineLane[line].Add(pos, new NormalNote(wav));
+                    break;
+                case Define.BMSObject.PlayerSide.P2:
+                    p2MineLane[line].Add(pos, new NormalNote(wav));
                     break;
             }
         }

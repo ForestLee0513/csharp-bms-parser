@@ -67,138 +67,113 @@ namespace BMSParser
             for (int i = 0; i < value.Length - 1; i += 2)
             {
                 string splittedValue = value.Substring(i, 2);
-
-                if ((Channel)channel == Channel.MEASURE_BEAT)
-                {
-                    float measureBeat = float.Parse(value);
-                    measures[measure].SetScale(measureBeat);
-                }
-
                 double pos = (1.0 * i / 2) / (value.Length / 2);
 
-                if ((Channel)channel == Channel.BGM)
+                // 이벤트 채널 //
+                switch ((Channel)channel)
                 {
-                    if (splittedValue == "00")
-                        continue;
+                    case Channel.MEASURE_BEAT:
+                        float measureBeat = float.Parse(value);
+                        measures[measure].SetScale(measureBeat);
+                        break;
+                    case Channel.BGM:
+                        if (splittedValue == "00")
+                            break;
 
-                    if (model.Base == Define.BMSModel.Base.BASE62)
-                    {
-                        measures[measure].AddBGM(pos, Util.Decode.DecodeBase62(splittedValue));
-                    }
-                    else
-                    {
-                        measures[measure].AddBGM(pos, Util.Decode.DecodeBase36(splittedValue));
-                    }
+                        if (model.Base == Define.BMSModel.Base.BASE62)
+                        {
+                            measures[measure].AddBGM(pos, Util.Decode.DecodeBase62(splittedValue));
+                        }
+                        else
+                        {
+                            measures[measure].AddBGM(pos, Util.Decode.DecodeBase36(splittedValue));
+                        }
+                        break;
+                    case Channel.BPM_CHANGE:
+                        if (splittedValue == "00")
+                            break;
+
+                        if (Util.Decode.DecodeBase16(splittedValue) < 256)
+                        {
+                            measures[measure].AddBPMEvent(pos, Util.Decode.DecodeBase16(splittedValue));
+                        }
+                        break;
+                    case Channel.SCROLL:
+                        if (model.Base == Define.BMSModel.Base.BASE62)
+                        {
+                            measures[measure].AddScroll(pos, model.ScrollList[Util.Decode.DecodeBase62(splittedValue)]);
+                        }
+                        else
+                        {
+                            measures[measure].AddScroll(pos, model.ScrollList[Util.Decode.DecodeBase36(splittedValue)]);
+                        }
+                        break;
+                    case Channel.BGA_BASE:
+                    case Channel.BGA_LAYER:
+                    case Channel.BGA_POOR:
+                        if (model.Base == Define.BMSModel.Base.BASE62)
+                        {
+                            measures[measure].AddBGA(pos, Util.Decode.DecodeBase62(splittedValue), (Define.BMSObject.BGA)channel);
+                        }
+                        else
+                        {
+                            measures[measure].AddBGA(pos, Util.Decode.DecodeBase36(splittedValue), (Define.BMSObject.BGA)channel);
+                        }
+                        break;
+                    case Channel.EXBPM:
+                        if (splittedValue == "00")
+                            break;
+
+                        if (model.Base == Define.BMSModel.Base.BASE62)
+                        {
+                            measures[measure].AddBPMEvent(pos, model.BpmList[Util.Decode.DecodeBase62(splittedValue)]);
+                        }
+                        else
+                        {
+                            measures[measure].AddBPMEvent(pos, model.BpmList[Util.Decode.DecodeBase36(splittedValue)]);
+                        }
+                        break;
+                    case Channel.STOP:
+                        if (splittedValue == "00")
+                        {
+                            break;
+                        }
+
+                        if (model.Base == Define.BMSModel.Base.BASE62)
+                        {
+                            measures[measure].AddStopEvent(pos, model.StopList[Util.Decode.DecodeBase62(splittedValue)]);
+                        }
+                        else
+                        {
+                            measures[measure].AddStopEvent(pos, model.StopList[Util.Decode.DecodeBase36(splittedValue)]);
+                        }
+                        break;
                 }
 
-                if ((Channel)channel == Channel.BPM_CHANGE)
-                {
-                    if (splittedValue == "00")
-                        continue;
-
-                    if (Util.Decode.DecodeBase16(splittedValue) < 256)
-                    {
-                        measures[measure].AddBPMEvent(pos, Util.Decode.DecodeBase16(splittedValue));
-                    }
-                }
-
-                if ((Channel)channel == Channel.SCROLL)
-                {
-                    if (model.Base == Define.BMSModel.Base.BASE62)
-                    {
-                        measures[measure].AddScroll(pos, model.ScrollList[Util.Decode.DecodeBase62(splittedValue)]);
-                    }
-                    else
-                    {
-                        measures[measure].AddScroll(pos, model.ScrollList[Util.Decode.DecodeBase36(splittedValue)]);
-                    }
-                }
-
-                if ((Channel)channel == Channel.BGA_BASE)
-                {
-                    if (model.Base == Define.BMSModel.Base.BASE62)
-                    {
-                        measures[measure].AddBGA(pos, Util.Decode.DecodeBase62(splittedValue), Define.BMSObject.BGA.BASE);
-                    }
-                    else
-                    {
-                        measures[measure].AddBGA(pos, Util.Decode.DecodeBase36(splittedValue), Define.BMSObject.BGA.BASE);
-                    }
-                }
-
-                if ((Channel)channel == Channel.BGA_POOR)
-                {
-                    if (model.Base == Define.BMSModel.Base.BASE62)
-                    {
-                        measures[measure].AddBGA(pos, Util.Decode.DecodeBase62(splittedValue), Define.BMSObject.BGA.POOR);
-                    }
-                    else
-                    {
-                        measures[measure].AddBGA(pos, Util.Decode.DecodeBase36(splittedValue), Define.BMSObject.BGA.POOR);
-                    }
-                }
-
-                if ((Channel)channel == Channel.BGA_LAYER)
-                {
-                    if (model.Base == Define.BMSModel.Base.BASE62)
-                    {
-                        measures[measure].AddBGA(pos, Util.Decode.DecodeBase62(splittedValue), Define.BMSObject.BGA.LAYER);
-                    }
-                    else
-                    {
-                        measures[measure].AddBGA(pos, Util.Decode.DecodeBase36(splittedValue), Define.BMSObject.BGA.LAYER);
-                    }
-                }
-
-                if ((Channel)channel == Channel.EXBPM)
-                {
-                    if (splittedValue == "00")
-                        continue;
-
-                    if (model.Base == Define.BMSModel.Base.BASE62)
-                    {
-                        measures[measure].AddBPMEvent(pos, model.BpmList[Util.Decode.DecodeBase62(splittedValue)]);
-                    }
-                    else
-                    {
-                        measures[measure].AddBPMEvent(pos, model.BpmList[Util.Decode.DecodeBase36(splittedValue)]);
-                    }
-                }
-
-                if ((Channel)channel == Channel.STOP)
-                {
-                    if (splittedValue == "00")
-                    {
-                        continue;
-                    }
-
-                    if (model.Base == Define.BMSModel.Base.BASE62)
-                    {
-                        measures[measure].AddStopEvent(pos, model.StopList[Util.Decode.DecodeBase62(splittedValue)]);
-                    }
-                    else
-                    {
-                        measures[measure].AddStopEvent(pos, model.StopList[Util.Decode.DecodeBase36(splittedValue)]);
-                    }
-                }
-
-                // Note Channel //
                 // 1P Normal
                 if (channel >= (int)Channel.P1_NORMAL_START_POS && channel < (int)Channel.P2_NORMAL_START_POS)
                 {
                     if (splittedValue == "00")
                         continue;
 
-                    int lane = channel - (int)Channel.P1_NORMAL_START_POS;
+                    int line = channel - (int)Channel.P1_NORMAL_START_POS;
 
                     // 모드 구분을 위한 할당된 키 갱신
-                    if (assigned1PKeys.Length < lane + 1)
+                    if (assigned1PKeys.Length < line + 1)
                     {
-                        Array.Resize(ref assigned1PKeys, lane + 1);
+                        Array.Resize(ref assigned1PKeys, line + 1);
                     }
-                    assigned1PKeys[lane] = true;
+                    assigned1PKeys[line] = true;
 
                     // 노트 추가
+                    if (model.Base == Define.BMSModel.Base.BASE62)
+                    {
+                        measures[measure].AddNotes(line, pos, Util.Decode.DecodeBase62(splittedValue), Define.BMSObject.PlayerSide.P1);
+                    }
+                    else
+                    {
+                        measures[measure].AddNotes(line, pos, Util.Decode.DecodeBase36(splittedValue), Define.BMSObject.PlayerSide.P1);
+                    }
                 }
 
                 // 2P Normal
@@ -207,16 +182,24 @@ namespace BMSParser
                     if (splittedValue == "00")
                         continue;
 
-                    int lane = channel - (int)Channel.P2_NORMAL_START_POS;
+                    int line = channel - (int)Channel.P2_NORMAL_START_POS;
 
                     //모드 구분을 위한 할당된 키 갱신
-                    if (assigned2PKeys.Length < lane + 1)
+                    if (assigned2PKeys.Length < line + 1)
                     {
-                        Array.Resize(ref assigned2PKeys, lane + 1);
+                        Array.Resize(ref assigned2PKeys, line + 1);
                     }
-                    assigned2PKeys[lane] = true;
+                    assigned2PKeys[line] = true;
 
                     // 노트 추가
+                    if (model.Base == Define.BMSModel.Base.BASE62)
+                    {
+                        measures[measure].AddLongNotes(line, pos, Util.Decode.DecodeBase62(splittedValue), Define.BMSObject.PlayerSide.P2);
+                    }
+                    else
+                    {
+                        measures[measure].AddLongNotes(line, pos, Util.Decode.DecodeBase36(splittedValue), Define.BMSObject.PlayerSide.P2);
+                    }
                 }
 
                 // 1P Invisible
@@ -225,16 +208,24 @@ namespace BMSParser
                     if (splittedValue == "00")
                         continue;
 
-                    int lane = channel - (int)Channel.P1_INVISIBLE_START_POS;
+                    int line = channel - (int)Channel.P1_INVISIBLE_START_POS;
 
                     // 모드 구분을 위한 할당된 키 갱신
-                    if (assigned1PKeys.Length < lane + 1)
+                    if (assigned1PKeys.Length < line + 1)
                     {
-                        Array.Resize(ref assigned1PKeys, lane + 1);
+                        Array.Resize(ref assigned1PKeys, line + 1);
                     }
-                    assigned1PKeys[lane] = true;
+                    assigned1PKeys[line] = true;
 
                     // 노트 추가
+                    if (model.Base == Define.BMSModel.Base.BASE62)
+                    {
+                        measures[measure].AddHiddenNotes(line, pos, Util.Decode.DecodeBase62(splittedValue), Define.BMSObject.PlayerSide.P1);
+                    }
+                    else
+                    {
+                        measures[measure].AddHiddenNotes(line, pos, Util.Decode.DecodeBase36(splittedValue), Define.BMSObject.PlayerSide.P1);
+                    }
                 }
 
                 // 2P Invisible
@@ -243,16 +234,24 @@ namespace BMSParser
                     if (splittedValue == "00")
                         continue;
 
-                    int lane = (channel - (int)Channel.P2_INVISIBLE_START_POS);
+                    int line = (channel - (int)Channel.P2_INVISIBLE_START_POS);
 
                     // 모드 구분을 위한 할당된 키 갱신
-                    if (assigned2PKeys.Length < lane + 1)
+                    if (assigned2PKeys.Length < line + 1)
                     {
-                        Array.Resize(ref assigned2PKeys, lane + 1);
+                        Array.Resize(ref assigned2PKeys, line + 1);
                     }
-                    assigned2PKeys[lane] = true;
+                    assigned2PKeys[line] = true;
 
                     // 노트 추가
+                    if (model.Base == Define.BMSModel.Base.BASE62)
+                    {
+                        measures[measure].AddHiddenNotes(line, pos, Util.Decode.DecodeBase62(splittedValue), Define.BMSObject.PlayerSide.P2);
+                    }
+                    else
+                    {
+                        measures[measure].AddHiddenNotes(line, pos, Util.Decode.DecodeBase36(splittedValue), Define.BMSObject.PlayerSide.P2);
+                    }
                 }
 
                 // 1P Longnote
@@ -261,16 +260,24 @@ namespace BMSParser
                     if (splittedValue == "00")
                         continue;
 
-                    int lane = channel - (int)Channel.P1_LONGNOTE_START_POS;
+                    int line = channel - (int)Channel.P1_LONGNOTE_START_POS;
 
                     // 모드 구분을 위한 할당된 키 갱신
-                    if (assigned1PKeys.Length < lane + 1)
+                    if (assigned1PKeys.Length < line + 1)
                     {
-                        Array.Resize(ref assigned1PKeys, lane + 1);
+                        Array.Resize(ref assigned1PKeys, line + 1);
                     }
-                    assigned1PKeys[lane] = true;
+                    assigned1PKeys[line] = true;
 
                     // 노트 추가
+                    if (model.Base == Define.BMSModel.Base.BASE62)
+                    {
+                        measures[measure].AddLongNotes(line, pos, Util.Decode.DecodeBase62(splittedValue), Define.BMSObject.PlayerSide.P1);
+                    }
+                    else
+                    {
+                        measures[measure].AddLongNotes(line, pos, Util.Decode.DecodeBase36(splittedValue), Define.BMSObject.PlayerSide.P1);
+                    }
                 }
 
                 // 2P Longnote
@@ -279,16 +286,24 @@ namespace BMSParser
                     if (splittedValue == "00")
                         continue;
 
-                    int lane = channel - (int)Channel.P2_LONGNOTE_START_POS;
+                    int line = channel - (int)Channel.P2_LONGNOTE_START_POS;
 
                     // 모드 구분을 위한 할당된 키 갱신
-                    if (assigned2PKeys.Length < lane + 1)
+                    if (assigned2PKeys.Length < line + 1)
                     {
-                        Array.Resize(ref assigned2PKeys, lane + 1);
+                        Array.Resize(ref assigned2PKeys, line + 1);
                     }
-                    assigned2PKeys[lane] = true;
+                    assigned2PKeys[line] = true;
 
                     // 노트 추가
+                    if (model.Base == Define.BMSModel.Base.BASE62)
+                    {
+                        measures[measure].AddLongNotes(line, pos, Util.Decode.DecodeBase62(splittedValue), Define.BMSObject.PlayerSide.P2);
+                    }
+                    else
+                    {
+                        measures[measure].AddLongNotes(line, pos, Util.Decode.DecodeBase36(splittedValue), Define.BMSObject.PlayerSide.P2);
+                    }
                 }
 
                 // 1P Land Mine
@@ -297,16 +312,24 @@ namespace BMSParser
                     if (splittedValue == "00")
                         continue;
 
-                    int lane = channel - (int)Channel.P1_LANDMINE_START_POS;
+                    int line = channel - (int)Channel.P1_LANDMINE_START_POS;
 
                     // 모드 구분을 위한 할당된 키 갱신
-                    if (assigned1PKeys.Length < lane + 1)
+                    if (assigned1PKeys.Length < line + 1)
                     {
-                        Array.Resize(ref assigned1PKeys, lane + 1);
+                        Array.Resize(ref assigned1PKeys, line + 1);
                     }
-                    assigned1PKeys[lane] = true;
+                    assigned1PKeys[line] = true;
 
                     // 노트 추가
+                    if (model.Base == Define.BMSModel.Base.BASE62)
+                    {
+                        measures[measure].AddMineNotes(line, pos, Util.Decode.DecodeBase62(splittedValue), Define.BMSObject.PlayerSide.P1);
+                    }
+                    else
+                    {
+                        measures[measure].AddMineNotes(line, pos, Util.Decode.DecodeBase36(splittedValue), Define.BMSObject.PlayerSide.P1);
+                    }
                 }
 
                 // 2P Land Mine
@@ -315,16 +338,24 @@ namespace BMSParser
                     if (splittedValue == "00")
                         continue;
 
-                    int lane = channel - (int)Channel.P2_LANDMINE_START_POS;
+                    int line = channel - (int)Channel.P2_LANDMINE_START_POS;
 
                     // 모드 구분을 위한 할당된 키 갱신
-                    if (assigned2PKeys.Length < lane + 1)
+                    if (assigned2PKeys.Length < line + 1)
                     {
-                        Array.Resize(ref assigned2PKeys, lane + 1);
+                        Array.Resize(ref assigned2PKeys, line + 1);
                     }
-                    assigned2PKeys[lane] = true;
+                    assigned2PKeys[line] = true;
 
                     // 노트 추가
+                    if (model.Base == Define.BMSModel.Base.BASE62)
+                    {
+                        measures[measure].AddMineNotes(line, pos, Util.Decode.DecodeBase62(splittedValue), Define.BMSObject.PlayerSide.P2);
+                    }
+                    else
+                    {
+                        measures[measure].AddMineNotes(line, pos, Util.Decode.DecodeBase36(splittedValue), Define.BMSObject.PlayerSide.P2);
+                    }
                 }
             }
         }
@@ -336,6 +367,9 @@ namespace BMSParser
         {
             for (int i = 0; i < measures.Length; i++)
             {
+                double previousSection = GetPreviousSection(i);
+
+                // 기믹 처리
                 IEnumerator<KeyValuePair<double, Stop>> stops = measures[i].StopEvents.GetEnumerator();
                 KeyValuePair<double, Stop>? ste = stops.MoveNext() ? stops.Current : (KeyValuePair<double, Stop>?)null;
 
@@ -344,8 +378,6 @@ namespace BMSParser
 
                 IEnumerator<KeyValuePair<double, Scroll>> scrolls = measures[i].ScrollEvents.GetEnumerator();
                 KeyValuePair<double, Scroll>? sce = scrolls.MoveNext() ? scrolls.Current : (KeyValuePair<double, Scroll>?)null;
-
-                double previousSection = GetPreviousSection(i);
 
                 while (ste.HasValue || bce.HasValue || sce.HasValue)
                 {
@@ -375,6 +407,9 @@ namespace BMSParser
                         ste = stops.MoveNext() ? stops.Current : (KeyValuePair<double, Stop>?)null;
                     }
                 }
+
+                // 노트 처리
+
             }
         }
 

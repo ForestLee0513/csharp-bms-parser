@@ -121,9 +121,9 @@ namespace BMSParser
         {
             public enum BGA
             {
-                BASE,
-                LAYER,
-                POOR
+                BASE = 4,
+                POOR = 6,
+                LAYER = 7
             }
 
             public enum PlayerSide
