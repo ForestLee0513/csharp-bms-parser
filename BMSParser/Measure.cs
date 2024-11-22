@@ -242,10 +242,10 @@ namespace BMSParser
             switch (playerSide)
             {
                 case Define.BMSObject.PlayerSide.P1:
-                    //p1Lane[line].Add(pos, new NormalNote(wav));
+                    p1LongLane[line].Add(pos, new LongNote(wav));;
                     break;
                 case Define.BMSObject.PlayerSide.P2:
-
+                    p2LongLane[line].Add(pos, new LongNote(wav)); ;
                     break;
             }
         }

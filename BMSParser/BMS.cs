@@ -516,6 +516,21 @@ namespace BMSParser
                 }
             },
             {
+                "LNTYPE", (BMSModel model, string value) =>
+                {
+                    try
+                    {
+                        int.TryParse(value, out int lnType);
+
+                        model.LnType = lnType;
+                    }
+                    catch
+                    {
+                        throw new FormatException("#LNTYPE 파싱에 실패했습니다. 숫자가 제대로 들어오는지 확인 해주세요.");
+                    }
+                }
+            },
+            {
                 "MIDIFILE", (BMSModel model, string value) => model.MidiFile = value
             },
             {

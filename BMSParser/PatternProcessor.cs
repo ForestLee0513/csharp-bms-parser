@@ -260,6 +260,12 @@ namespace BMSParser
                     if (splittedValue == "00")
                         continue;
 
+                    if (model.LnType == 2)
+                    {
+                        Console.WriteLine($"LNTYPE 2는 지원하지 않습니다. LNTYPE 1 혹은 LNOBJ를 할당하여 롱노트 형식을 변경 해주세요.");
+                        continue;
+                    }
+
                     int line = channel - (int)Channel.P1_LONGNOTE_START_POS;
 
                     // 모드 구분을 위한 할당된 키 갱신
@@ -285,6 +291,12 @@ namespace BMSParser
                 {
                     if (splittedValue == "00")
                         continue;
+
+                    if (model.LnType == 2)
+                    {
+                        Console.WriteLine($"LNTYPE 2는 지원하지 않습니다. LNTYPE 1 혹은 LNOBJ를 할당하여 롱노트 형식을 변경 해주세요.");
+                        continue;
+                    }
 
                     int line = channel - (int)Channel.P2_LONGNOTE_START_POS;
 
