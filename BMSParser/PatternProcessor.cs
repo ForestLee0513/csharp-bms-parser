@@ -454,7 +454,6 @@ namespace BMSParser
                         {
                             Timestamp prevTimestamp = GetTimestamp(lastP1Section[lane.Key]);
                             
-                            // pair지정 해야하나?
                             // 롱노트의 시작
                             if (!prevTimestamp.P1LongLane.ContainsKey(lane.Key))
                             {
@@ -462,7 +461,7 @@ namespace BMSParser
                             }
                             foreach (Note prevNote in prevTimestamp.P1Lane[lane.Key])
                             {
-                                prevTimestamp.P1LongLane[lane.Key].Add(new LongNote(prevNote.KeySound));
+                                prevTimestamp.P1LongLane[lane.Key].Add(new LongNote(prevNote.KeySound, section));
                             }
                             prevTimestamp.P1Lane.Remove(lane.Key);
 
@@ -471,7 +470,7 @@ namespace BMSParser
                             {
                                 timestamp.P1LongLane.Add(lane.Key, new List<LongNote>());
                             }
-                            timestamp.P1LongLane[lane.Key].Add(new LongNote(note.Value.KeySound));
+                            timestamp.P1LongLane[lane.Key].Add(new LongNote(-1, lastP1Section[lane.Key]));
                         }
                         else
                         {
@@ -498,7 +497,24 @@ namespace BMSParser
                         if (note.Value.KeySound == lnobj)
                         {
                             Timestamp prevTimestamp = GetTimestamp(lastP2Section[lane.Key]);
-                            // p1의 로직 다 되고나면 진행
+
+                            // 롱노트의 시작
+                            if (!prevTimestamp.P2LongLane.ContainsKey(lane.Key))
+                            {
+                                prevTimestamp.P2LongLane.Add(lane.Key, new List<LongNote>());
+                            }
+                            foreach (Note prevNote in prevTimestamp.P2Lane[lane.Key])
+                            {
+                                prevTimestamp.P2LongLane[lane.Key].Add(new LongNote(prevNote.KeySound, section));
+                            }
+                            prevTimestamp.P2Lane.Remove(lane.Key);
+
+                            // 롱노트의 끝
+                            if (!timestamp.P2LongLane.ContainsKey(lane.Key))
+                            {
+                                timestamp.P2LongLane.Add(lane.Key, new List<LongNote>());
+                            }
+                            timestamp.P2LongLane[lane.Key].Add(new LongNote(-1, lastP2Section[lane.Key]));
                         }
                         else
                         {
