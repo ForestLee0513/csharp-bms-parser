@@ -46,14 +46,14 @@ namespace BMSParser
                 EXBPM,
                 STOP,
 
-                P1_NORMAL_START_POS = 37,
-                P2_NORMAL_START_POS = 2 * 37,
-                P1_INVISIBLE_START_POS = 3 * 37,
-                P2_INVISIBLE_START_POS = 4 * 37,
-                P1_LONGNOTE_START_POS = 5 * 37,
-                P2_LONGNOTE_START_POS = 6 * 37,
-                P1_LANDMINE_START_POS = 13 * 37,
-                P2_LANDMINE_START_POS = 14 * 37,
+                P1_NORMAL_START_POS = 1 * 36 + 1,
+                P2_NORMAL_START_POS = 2 * 36 + 1,
+                P1_INVISIBLE_START_POS = 3 * 36 + 1,
+                P2_INVISIBLE_START_POS = 4 * 36 + 1,
+                P1_LONGNOTE_START_POS = 5 * 36 + 1,
+                P2_LONGNOTE_START_POS = 6 * 36 + 1,
+                P1_LANDMINE_START_POS = 13 * 36 + 1,
+                P2_LANDMINE_START_POS = 14 * 36 + 1,
 
                 SCROLL = 1020
             }
