@@ -11,32 +11,32 @@ namespace BMSParser
         public SortedDictionary<double, List<NormalNote>> Bgm { get { return bgm; } }
 
         // Note //
-        private readonly Dictionary<int, SortedDictionary<double, Note>> p1Lane = new Dictionary<int, SortedDictionary<double, Note>>();
-        public Dictionary<int, SortedDictionary<double, Note>> P1Lane { get { return p1Lane; } }
+        private readonly Dictionary<int, SortedDictionary<double, NormalNote>> p1Lane = new Dictionary<int, SortedDictionary<double, NormalNote>>();
+        public Dictionary<int, SortedDictionary<double, NormalNote>> P1Lane { get { return p1Lane; } }
 
-        private readonly Dictionary<int, SortedDictionary<double, Note>> p2Lane = new Dictionary<int, SortedDictionary<double, Note>>();
-        public Dictionary<int, SortedDictionary<double, Note>> P2Lane { get { return p2Lane; } }
+        private readonly Dictionary<int, SortedDictionary<double, NormalNote>> p2Lane = new Dictionary<int, SortedDictionary<double, NormalNote>>();
+        public Dictionary<int, SortedDictionary<double, NormalNote>> P2Lane { get { return p2Lane; } }
 
         // Long Note //
-        private readonly Dictionary<int, SortedDictionary<double, Note>> p1LongLane = new Dictionary<int, SortedDictionary<double, Note>>();
-        public Dictionary<int, SortedDictionary<double, Note>> P1LongLane { get { return p1LongLane; } }
+        private readonly Dictionary<int, SortedDictionary<double, LongNote>> p1LongLane = new Dictionary<int, SortedDictionary<double, LongNote>>();
+        public Dictionary<int, SortedDictionary<double, LongNote>> P1LongLane { get { return p1LongLane; } }
 
-        private readonly Dictionary<int, SortedDictionary<double, Note>> p2LongLane = new Dictionary<int, SortedDictionary<double, Note>>();
-        public Dictionary<int, SortedDictionary<double, Note>> P2LongLane { get { return p2LongLane; } }
+        private readonly Dictionary<int, SortedDictionary<double, LongNote>> p2LongLane = new Dictionary<int, SortedDictionary<double, LongNote>>();
+        public Dictionary<int, SortedDictionary<double, LongNote>> P2LongLane { get { return p2LongLane; } }
 
         // Hidden Note //
-        private readonly Dictionary<int, SortedDictionary<double, Note>> p1HiddenLane = new Dictionary<int, SortedDictionary<double, Note>>();
-        public Dictionary<int, SortedDictionary<double, Note>> P1HiddenLane { get { return p1HiddenLane; } }
+        private readonly Dictionary<int, SortedDictionary<double, HiddenNote>> p1HiddenLane = new Dictionary<int, SortedDictionary<double, HiddenNote>>();
+        public Dictionary<int, SortedDictionary<double, HiddenNote>> P1HiddenLane { get { return p1HiddenLane; } }
 
-        private readonly Dictionary<int, SortedDictionary<double, Note>> p2HiddenLane = new Dictionary<int, SortedDictionary<double, Note>>();
-        public Dictionary<int, SortedDictionary<double, Note>> P2HiddenLane { get { return p2HiddenLane; } }
+        private readonly Dictionary<int, SortedDictionary<double, HiddenNote>> p2HiddenLane = new Dictionary<int, SortedDictionary<double, HiddenNote>>();
+        public Dictionary<int, SortedDictionary<double, HiddenNote>> P2HiddenLane { get { return p2HiddenLane; } }
 
         // Mine Note //
-        private readonly Dictionary<int, SortedDictionary<double, Note>> p1MineLane = new Dictionary<int, SortedDictionary<double, Note>>();
-        public Dictionary<int, SortedDictionary<double, Note>> P1MineLane { get { return p1MineLane; } }
+        private readonly Dictionary<int, SortedDictionary<double, MineNote>> p1MineLane = new Dictionary<int, SortedDictionary<double, MineNote>>();
+        public Dictionary<int, SortedDictionary<double, MineNote>> P1MineLane { get { return p1MineLane; } }
 
-        private readonly Dictionary<int, SortedDictionary<double, Note>> p2MineLane = new Dictionary<int, SortedDictionary<double, Note>>();
-        public Dictionary<int, SortedDictionary<double, Note>> P2MineLane { get { return p2MineLane; } }
+        private readonly Dictionary<int, SortedDictionary<double, MineNote>> p2MineLane = new Dictionary<int, SortedDictionary<double, MineNote>>();
+        public Dictionary<int, SortedDictionary<double, MineNote>> P2MineLane { get { return p2MineLane; } }
 
 
         // GIMMIK - BPM, STOP, SCROLL EVENTS //
@@ -145,11 +145,11 @@ namespace BMSParser
             {
                 case Define.BMSObject.PlayerSide.P1:
                     if (!p1Lane.ContainsKey(lane))
-                        p1Lane.Add(lane, new SortedDictionary<double, Note>());
+                        p1Lane.Add(lane, new SortedDictionary<double, NormalNote>());
                     break;
                 case Define.BMSObject.PlayerSide.P2:
                     if (!p2Lane.ContainsKey(lane))
-                        p2Lane.Add(lane, new SortedDictionary<double, Note>());
+                        p2Lane.Add(lane, new SortedDictionary<double, NormalNote>());
                     break;
             }
         }
@@ -165,11 +165,11 @@ namespace BMSParser
             {
                 case Define.BMSObject.PlayerSide.P1:
                     if (!p1LongLane.ContainsKey(lane))
-                        p1LongLane.Add(lane, new SortedDictionary<double, Note>());
+                        p1LongLane.Add(lane, new SortedDictionary<double, LongNote>());
                     break;
                 case Define.BMSObject.PlayerSide.P2:
                     if (!p2LongLane.ContainsKey(lane))
-                        p2LongLane.Add(lane, new SortedDictionary<double, Note>());
+                        p2LongLane.Add(lane, new SortedDictionary<double, LongNote>());
                     break;
             }
         }
@@ -185,11 +185,11 @@ namespace BMSParser
             {
                 case Define.BMSObject.PlayerSide.P1:
                     if (!p1HiddenLane.ContainsKey(lane))
-                        p1HiddenLane.Add(lane, new SortedDictionary<double, Note>());
+                        p1HiddenLane.Add(lane, new SortedDictionary<double, HiddenNote>());
                     break;
                 case Define.BMSObject.PlayerSide.P2:
                     if (!p2HiddenLane.ContainsKey(lane))
-                        p2HiddenLane.Add(lane, new SortedDictionary<double, Note>());
+                        p2HiddenLane.Add(lane, new SortedDictionary<double, HiddenNote>());
                     break;
             }
         }
@@ -205,11 +205,11 @@ namespace BMSParser
             {
                 case Define.BMSObject.PlayerSide.P1:
                     if (!p1MineLane.ContainsKey(lane))
-                        p1MineLane.Add(lane, new SortedDictionary<double, Note>());
+                        p1MineLane.Add(lane, new SortedDictionary<double, MineNote>());
                     break;
                 case Define.BMSObject.PlayerSide.P2:
                     if (!p2MineLane.ContainsKey(lane))
-                        p2MineLane.Add(lane, new SortedDictionary<double, Note>());
+                        p2MineLane.Add(lane, new SortedDictionary<double, MineNote>());
                     break;
             }
         }
@@ -264,10 +264,10 @@ namespace BMSParser
             switch (playerSide)
             {
                 case Define.BMSObject.PlayerSide.P1:
-                    p1HiddenLane[line].Add(pos, new NormalNote(wav));
+                    p1HiddenLane[line].Add(pos, new HiddenNote(wav));
                     break;
                 case Define.BMSObject.PlayerSide.P2:
-                    p2HiddenLane[line].Add(pos, new NormalNote(wav));
+                    p2HiddenLane[line].Add(pos, new HiddenNote(wav));
                     break;
             }
         }
@@ -279,17 +279,17 @@ namespace BMSParser
         /// <param name="pos">비트</param>
         /// <param name="wav">키음 ID</param>
         /// <param name="playerSide">플레이 영역 위치(1p / 2p)</param>
-        public void AddMineNotes(int line, double pos, int wav, Define.BMSObject.PlayerSide playerSide)
+        public void AddMineNotes(int line, double pos, double damage, Define.BMSObject.PlayerSide playerSide)
         {
             ExtendMineNoteLine(playerSide, line);
 
             switch (playerSide)
             {
                 case Define.BMSObject.PlayerSide.P1:
-                    p1MineLane[line].Add(pos, new NormalNote(wav));
+                    p1MineLane[line].Add(pos, new MineNote(damage));
                     break;
                 case Define.BMSObject.PlayerSide.P2:
-                    p2MineLane[line].Add(pos, new NormalNote(wav));
+                    p2MineLane[line].Add(pos, new MineNote(damage));
                     break;
             }
         }

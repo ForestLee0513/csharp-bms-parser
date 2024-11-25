@@ -281,7 +281,7 @@ namespace BMSParser
             };
 
             model.PatternProcessor.Timestamp.Add(0, baseTimestamp);
-            model.PatternProcessor.CalculateTiming();
+            model.PatternProcessor.CalculateTiming(model.Lnobj);
 
             return model;
         }

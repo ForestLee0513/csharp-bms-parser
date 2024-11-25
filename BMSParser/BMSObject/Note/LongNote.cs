@@ -1,6 +1,6 @@
 ﻿namespace BMSParser
 {
-    class LongNote : Note
+    public class LongNote : Note
     {
         public double PairBeat { get; set; }
 

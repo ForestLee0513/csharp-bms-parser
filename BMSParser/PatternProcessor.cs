@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Remoting.Metadata.W3cXsd2001;
 using static BMSParser.Define.PatternProcessor;
 
 namespace BMSParser
@@ -336,11 +337,11 @@ namespace BMSParser
                     // 노트 추가
                     if (model.Base == Define.BMSModel.Base.BASE62)
                     {
-                        measures[measure].AddMineNotes(line, pos, Util.Decode.DecodeBase62(splittedValue), Define.BMSObject.PlayerSide.P1);
+                        measures[measure].AddMineNotes(line, pos, Util.Decode.DecodeBase62(splittedValue) / 2, Define.BMSObject.PlayerSide.P1);
                     }
                     else
                     {
-                        measures[measure].AddMineNotes(line, pos, Util.Decode.DecodeBase36(splittedValue), Define.BMSObject.PlayerSide.P1);
+                        measures[measure].AddMineNotes(line, pos, Util.Decode.DecodeBase36(splittedValue) / 2, Define.BMSObject.PlayerSide.P1);
                     }
                 }
 
@@ -375,8 +376,27 @@ namespace BMSParser
         /// <summary>
         /// 타이밍 계산
         /// </summary>
-        public void CalculateTiming()
+        /// <param name="lnobj">일반 노트 처리방식에서 롱노트의 끝을 지정하는 키음 키</param>
+        public void CalculateTiming(int lnobj)
         {
+            // 이전 일반노트 (LNOBJ 롱노트 변환용)
+            Dictionary<int, double> lastP1Section = new Dictionary<int, double>();
+            Dictionary<int, double> lastP2Section = new Dictionary<int, double>();
+            for (int i = 0; i < assigned1PKeys.Length; i++)
+            {
+                if (assigned1PKeys[i] == true)
+                    lastP1Section.Add(i, -1.0);
+            }
+            for (int i = 0; i < assigned2PKeys.Length; i++)
+            {
+                if (assigned1PKeys[i] == true)
+                    lastP2Section.Add(i, -1.0);
+            }
+
+            // 이전 롱노트 (롱노트 짝 구분용)
+            Dictionary<int, double> prevP1LongNoteSection = new Dictionary<int, double>();
+            Dictionary<int, double> prevP2LongNoteSection = new Dictionary<int, double>();
+
             for (int i = 0; i < measures.Length; i++)
             {
                 double previousSection = GetPreviousSection(i);
@@ -420,8 +440,149 @@ namespace BMSParser
                     }
                 }
 
-                // 노트 처리
+                // 단노트 처리 //
+                // LONBJ가 감지될 경우 현재 비트와 이전 비트를 롱노트로 변환 처리
+                // 1P
+                foreach (KeyValuePair<int, SortedDictionary<double, NormalNote>> lane in measures[i].P1Lane)
+                {
+                    foreach (KeyValuePair<double, NormalNote> note in lane.Value)
+                    {
+                        double section = previousSection + note.Key * measures[i].Scale;
+                        Timestamp timestamp = GetTimestamp(section);
 
+                        if (note.Value.KeySound == lnobj)
+                        {
+                            Timestamp prevTimestamp = GetTimestamp(lastP1Section[lane.Key]);
+                            
+                            // pair지정 해야하나?
+                            // 롱노트의 시작
+                            if (!prevTimestamp.P1LongLane.ContainsKey(lane.Key))
+                            {
+                                prevTimestamp.P1LongLane.Add(lane.Key, new List<LongNote>());
+                            }
+                            foreach (Note prevNote in prevTimestamp.P1Lane[lane.Key])
+                            {
+                                prevTimestamp.P1LongLane[lane.Key].Add(new LongNote(prevNote.KeySound));
+                            }
+                            prevTimestamp.P1Lane.Remove(lane.Key);
+
+                            // 롱노트의 끝
+                            if (!timestamp.P1LongLane.ContainsKey(lane.Key))
+                            {
+                                timestamp.P1LongLane.Add(lane.Key, new List<LongNote>());
+                            }
+                            timestamp.P1LongLane[lane.Key].Add(new LongNote(note.Value.KeySound));
+                        }
+                        else
+                        {
+                            if (!timestamp.P1Lane.ContainsKey(lane.Key))
+                            {
+                                timestamp.P1Lane.Add(lane.Key, new List<NormalNote>());
+                            }
+
+                            timestamp.P1Lane[lane.Key].Add(new NormalNote(note.Value.KeySound));
+                        }
+
+                        lastP1Section[lane.Key] = section;
+                    }
+                }
+
+                // 2P
+                foreach (KeyValuePair<int, SortedDictionary<double, NormalNote>> lane in measures[i].P2Lane)
+                {
+                    foreach (KeyValuePair<double, NormalNote> note in lane.Value)
+                    {
+                        double section = previousSection + note.Key * measures[i].Scale;
+                        Timestamp timestamp = GetTimestamp(section);
+
+                        if (note.Value.KeySound == lnobj)
+                        {
+                            Timestamp prevTimestamp = GetTimestamp(lastP2Section[lane.Key]);
+                            // p1의 로직 다 되고나면 진행
+                        }
+                        else
+                        {
+                            if (!timestamp.P2Lane.ContainsKey(lane.Key))
+                            {
+                                timestamp.P2Lane.Add(lane.Key, new List<NormalNote>());
+                            }
+
+                            timestamp.P2Lane[lane.Key].Add(new NormalNote(note.Value.KeySound));
+                        }
+
+                        lastP2Section[lane.Key] = section;
+                    }
+                }
+
+                // 롱노트 처리
+
+                // 지뢰노트 처리
+                // P1
+                foreach (KeyValuePair<int, SortedDictionary<double, MineNote>> lane in measures[i].P1MineLane)
+                {
+                    foreach (KeyValuePair<double, MineNote> note in lane.Value)
+                    {
+                        double section = previousSection + note.Key * measures[i].Scale;
+                        Timestamp timestamp = GetTimestamp(section);
+
+                        if (!timestamp.P1MineLane.ContainsKey(lane.Key))
+                        {
+                            timestamp.P1MineLane.Add(lane.Key, new List<MineNote>());
+                        }
+
+                        timestamp.P1MineLane[lane.Key].Add(new MineNote(note.Value.Damage));
+                    }
+                }
+                // P2
+                foreach (KeyValuePair<int, SortedDictionary<double, MineNote>> lane in measures[i].P2MineLane)
+                {
+                    foreach (KeyValuePair<double, MineNote> note in lane.Value)
+                    {
+                        double section = previousSection + note.Key * measures[i].Scale;
+                        Timestamp timestamp = GetTimestamp(section);
+
+                        if (!timestamp.P2MineLane.ContainsKey(lane.Key))
+                        {
+                            timestamp.P2MineLane.Add(lane.Key, new List<MineNote>());
+                        }
+
+                        timestamp.P2MineLane[lane.Key].Add(new MineNote(note.Value.Damage));
+                    }
+                }
+
+                // 숨겨진 노트 처리
+                // P1
+                foreach (KeyValuePair<int, SortedDictionary<double, HiddenNote>> lane in measures[i].P1HiddenLane)
+                {
+                    foreach (KeyValuePair<double, HiddenNote> note in lane.Value)
+                    {
+                        double section = previousSection + note.Key * measures[i].Scale;
+                        Timestamp timestamp = GetTimestamp(section);
+
+                        if (!timestamp.P1HiddenLane.ContainsKey(lane.Key))
+                        {
+                            timestamp.P1HiddenLane.Add(lane.Key, new List<HiddenNote>());
+                        }
+
+                        timestamp.P1HiddenLane[lane.Key].Add(new HiddenNote(note.Value.KeySound));
+                    }
+                }
+                // P2
+                foreach (KeyValuePair<int, SortedDictionary<double, HiddenNote>> lane in measures[i].P2HiddenLane)
+                {
+                    foreach (KeyValuePair<double, HiddenNote> note in lane.Value)
+                    {
+                        double section = previousSection + note.Key * measures[i].Scale;
+                        Timestamp timestamp = GetTimestamp(section);
+
+                        if (!timestamp.P2HiddenLane.ContainsKey(lane.Key))
+                        {
+                            timestamp.P2HiddenLane.Add(lane.Key, new List<HiddenNote>());
+                        }
+
+                        timestamp.P2HiddenLane[lane.Key].Add(new HiddenNote(note.Value.KeySound));
+                    }
+                }
             }
         }
 
