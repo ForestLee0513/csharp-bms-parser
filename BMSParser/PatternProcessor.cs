@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Remoting.Metadata.W3cXsd2001;
 using static BMSParser.Define.PatternProcessor;
-using static System.Collections.Specialized.BitVector32;
 
 namespace BMSParser
 {
@@ -553,8 +551,6 @@ namespace BMSParser
                         if (lastP1LongNoteSection[lane.Key] != -1)
                         {
                             Timestamp prevTimestamp = GetTimestamp(lastP1LongNoteSection[lane.Key]);
-                            Console.WriteLine($"1p {lane.Key} 롱노트 시작: {lastP1LongNoteSection[lane.Key]} 롱노트 끝:{section} | {lastP1LongNoteSection[lane.Key] < section}");
-
 
                             // 롱노트 시작
                             foreach (LongNote lnStart in prevTimestamp.P1LongLane[lane.Key])
@@ -591,8 +587,6 @@ namespace BMSParser
                         if (lastP2LongNoteSection[lane.Key] != -1)
                         {
                             Timestamp prevTimestamp = GetTimestamp(lastP2LongNoteSection[lane.Key]);
-                            Console.WriteLine($"2p {lane.Key} 롱노트 시작: {lastP2LongNoteSection[lane.Key]} 롱노트 끝:{section} | {lastP2LongNoteSection[lane.Key] < section}");
-
 
                             // 롱노트 시작
                             foreach (LongNote lnStart in prevTimestamp.P2LongLane[lane.Key])
