@@ -1,4 +1,6 @@
-﻿using static BMSParser.Define.BMSModel;
+﻿using System.Collections.Generic;
+using static BMSParser.Define.BMSModel;
+using static BMSParser.Define.PatternProcessor;
 
 namespace BMSParser
 {
@@ -10,6 +12,7 @@ namespace BMSParser
         public string SHA256 { get; set; }
         public string MD5 { get; set; }
         public Base Base { get; set; }
+        public BMSKey Mode { get; set; }
         #endregion
 
         #region HEADER
@@ -31,14 +34,17 @@ namespace BMSParser
         public double Bpm { get; set; }
         public double[] BpmList { get; set; } = new double[62 * 62];
         public double[] StopList { get; set; } = new double[62 * 62];
+        public double[] ScrollList { get; set; } = new double[62 * 62];
         public int Lnobj { get; set; } = -1;
         public string[] Wav { get; set; } = new string[62 * 62];
         public string MidiFile { get; set; }
         public string[] Bmp { get; set; } = new string[62 * 62];
+        public LNType LnType { get; set; } = LNType.NONE;
         #endregion
 
         #region Main Data
-
+        public PatternProcessor PatternProcessor { get; } = new PatternProcessor();
+        public SortedDictionary<double, Timestamp> Timestamp;
         #endregion
     }
 }

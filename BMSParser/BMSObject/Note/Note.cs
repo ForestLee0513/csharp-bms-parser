@@ -2,6 +2,6 @@
 {
     public abstract class Note : BMSObject
     {
-        public int KeySound { get; }
+        public int KeySound { get; set; }
     }
 }

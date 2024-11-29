@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using static BMSParser.Define.BMSModel;
+using static BMSParser.Define.PatternProcessor;
 
 namespace BMSParser
 {
@@ -31,6 +33,8 @@ namespace BMSParser
             }
             #endregion
 
+            model.Mode = model.Extension == Extension.PMS ? BMSKey.POPN : BMSKey.BMS_5K_ONLY;
+
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             using (var reader = new StreamReader(path, Encoding.GetEncoding(932)))
             {
@@ -45,8 +49,8 @@ namespace BMSParser
 
                     if (line[0] == '#')
                     {
-                        string key = line.IndexOf(" ") > -1 ? line.Substring(1, line.IndexOf(" ") - 1) : line.IndexOf(":") > -1 ? line.Substring(1, line.IndexOf(":") - 1) : line.Substring(1);
-                        string value = line.IndexOf(" ") > -1 ? line.Substring(line.IndexOf(" ") + 1) : "";
+                        string key = line.IndexOf(' ') > -1 ? line.Substring(1, line.IndexOf(' ') - 1) : line.Substring(1);
+                        string value = line.IndexOf(' ') > -1 ? line.Substring(line.IndexOf(' ') + 1) : "";
 
                         #region Random
                         if (key == "RANDOM")
@@ -125,15 +129,14 @@ namespace BMSParser
                         if (key.StartsWith("WAV"))
                         {
                             string wavKey = key.Substring(3);
-                            long decodedWavKey = 0;
-                            if (Util.Decode.IsBase36(wavKey))
-                            {
-                                decodedWavKey = Util.Decode.DecodeBase36(wavKey);
-                            }
-                            else if (Util.Decode.IsBase62(wavKey))
+                            long decodedWavKey;
+                            if (model.Base == Base.BASE62)
                             {
                                 decodedWavKey = Util.Decode.DecodeBase62(wavKey);
-                                model.Base = Base.BASE62;
+                            }
+                            else
+                            {
+                                decodedWavKey = Util.Decode.DecodeBase36(wavKey);
                             }
 
                             model.Wav[decodedWavKey] = value;
@@ -142,15 +145,14 @@ namespace BMSParser
                         if (key.StartsWith("BMP"))
                         {
                             string bmpKey = key.Substring(3);
-                            long decodedBmpKey = 0;
-                            if (Util.Decode.IsBase36(bmpKey))
-                            {
-                                decodedBmpKey = Util.Decode.DecodeBase36(bmpKey);
-                            }
-                            else if (Util.Decode.IsBase62(bmpKey))
+                            long decodedBmpKey;
+                            if (model.Base == Base.BASE62)
                             {
                                 decodedBmpKey = Util.Decode.DecodeBase62(bmpKey);
-                                model.Base = Base.BASE62;
+                            }
+                            else
+                            {
+                                decodedBmpKey = Util.Decode.DecodeBase36(bmpKey);
                             }
 
                             model.Bmp[decodedBmpKey] = value;
@@ -160,18 +162,17 @@ namespace BMSParser
                         {
                             double.TryParse(value, out double stop);
                             string stopKey = key.Substring(4);
-                            long decodedStopKey = 0;
-                            if (Util.Decode.IsBase36(stopKey))
+                            long decodedStopKey;
+                            if (model.Base == Base.BASE62)
+                            {
+                                decodedStopKey = Util.Decode.DecodeBase62(stopKey);
+                            }
+                            else
                             {
                                 decodedStopKey = Util.Decode.DecodeBase36(stopKey);
                             }
-                            else if (Util.Decode.IsBase62(stopKey))
-                            {
-                                decodedStopKey = Util.Decode.DecodeBase62(stopKey);
-                                model.Base = Base.BASE62;
-                            }
 
-                            model.StopList[decodedStopKey] = stop;
+                            model.StopList[decodedStopKey] = stop / 192;
                         }
 
                         if (key.StartsWith("BPM"))
@@ -180,24 +181,52 @@ namespace BMSParser
                             {
                                 double.TryParse(value, out double bpm);
                                 model.Bpm = bpm;
+                                model.PatternProcessor.ExtendMeasure(0);
+                                model.PatternProcessor.Measures[0].AddBPMEvent(0, bpm);
                             }
                             else
                             {
                                 double.TryParse(value, out double bpm);
                                 string bpmKey = key.Substring(3);
-                                long decodedBpmKey = 0;
-                                if (Util.Decode.IsBase36(bpmKey))
-                                {
-                                    decodedBpmKey = Util.Decode.DecodeBase36(bpmKey);
-                                }
-                                else if (Util.Decode.IsBase62(bpmKey))
+                                long decodedBpmKey;
+                                if (model.Base == Base.BASE62)
                                 {
                                     decodedBpmKey = Util.Decode.DecodeBase62(bpmKey);
-                                    model.Base = Base.BASE62;
+                                }
+                                else
+                                {
+                                    decodedBpmKey = Util.Decode.DecodeBase36(bpmKey);
                                 }
 
                                 model.BpmList[decodedBpmKey] = bpm;
                             }
+                        }
+
+                        if (key.StartsWith("SCROLL"))
+                        {
+                            double.TryParse(value, out double scroll);
+                            string scrollKey = key.Substring(6);
+                            long decodedScrollKey;
+                            if (model.Base == Base.BASE62)
+                            {
+                                decodedScrollKey = Util.Decode.DecodeBase62(scrollKey);
+                            }
+                            else
+                            {
+                                decodedScrollKey = Util.Decode.DecodeBase36(scrollKey);
+                            }
+
+                            model.ScrollList[decodedScrollKey] = scroll;
+                        }
+
+                        if (key.StartsWith("4K"))
+                        {
+                            model.Mode = BMSKey.BMS_4K;
+                        }
+
+                        if (key.StartsWith("6K"))
+                        {
+                            model.Mode = BMSKey.BMS_6K;
                         }
 
                         if (headerCommands.ContainsKey(key))
@@ -207,11 +236,32 @@ namespace BMSParser
                         #endregion
 
                         #region Parse main data
+                        bool isMainData = line.IndexOf(':') > -1 && !headerCommands.ContainsKey(key);
 
+                        if (isMainData)
+                        {
+                            string[] mainDataKeyValuePair = line.Substring(1).Split(':');
+                            string mainDataHeader = mainDataKeyValuePair[0];
+                            string mainDataValue = mainDataKeyValuePair[1];
+
+                            int measure = int.Parse(mainDataHeader.Substring(0, 3));
+                            int channel = Util.Decode.DecodeBase36(mainDataHeader.Substring(3));
+
+                            model.PatternProcessor.AssignObjectsBeat(measure, channel, mainDataValue, model);
+                        }
                         #endregion
                     }
                 } while (!reader.EndOfStream);
             }
+
+            Timestamp baseTimestamp = new Timestamp(0)
+            {
+                Bpm = model.Bpm
+            };
+
+            model.PatternProcessor.Timestamp.Add(0, baseTimestamp);
+            model.PatternProcessor.CalculateTiming(model.Lnobj);
+            model.Timestamp = model.PatternProcessor.Timestamp;
 
             return model;
         }
@@ -271,7 +321,7 @@ namespace BMSParser
                             Console.WriteLine("#DEFEXRANK는 0보다 높게 지정돼야 합니다.");
                         }
                     }
-                    catch (FormatException e)
+                    catch
                     {
                         throw new FormatException("#DEFEXRANK 파싱에 실패했습니다. 숫자가 제대로 들어오는지 확인 해주세요.");
                     }
@@ -358,18 +408,18 @@ namespace BMSParser
                 {
                     try
                     {
-                        long decodedLNOBJKey = 0;
-                        if (Util.Decode.IsBase36(value))
-                            {
-                                decodedLNOBJKey = Util.Decode.DecodeBase36(value);
-                            }
-                            else if (Util.Decode.IsBase62(value))
-                            {
-                                decodedLNOBJKey = Util.Decode.DecodeBase62(value);
-                                model.Base = Base.BASE62;
-                            }
+                        int decodedLNOBJKey;
+                        if (model.Base == Base.BASE62)
+                        {
+                            decodedLNOBJKey = Util.Decode.DecodeBase62(value);
+                        }
+                        else
+                        {
+                            decodedLNOBJKey = Util.Decode.DecodeBase36(value);
+                        }
 
-                        model.Lnobj = (int)decodedLNOBJKey;
+                        model.Lnobj = decodedLNOBJKey;
+                        model.LnType = LNType.LNOBJ;
                     }
                     catch
                     {
@@ -378,7 +428,38 @@ namespace BMSParser
                 }
             },
             {
+                "LNTYPE", (BMSModel model, string value) =>
+                {
+                    try
+                    {
+                        int.TryParse(value, out int lnType);
+
+                        model.LnType = (LNType)lnType;
+                    }
+                    catch
+                    {
+                        throw new FormatException("#LNTYPE 파싱에 실패했습니다. 숫자가 제대로 들어오는지 확인 해주세요.");
+                    }
+                }
+            },
+            {
                 "MIDIFILE", (BMSModel model, string value) => model.MidiFile = value
+            },
+            {
+                "BASE", (BMSModel model, string value) =>
+                {
+                    try
+                    {
+                        if (int.Parse(value) != 62)
+                            throw new FormatException("BASE62로 지정되지 않았습니다.");
+
+                        model.Base = Base.BASE62;
+                    }
+                    catch
+                    {
+                            throw new FormatException("#BASE 파싱에 실패했습니다. 숫자가 제대로 들어오는지 확인 해주세요.");
+                    }
+                }
             }
         };
 
