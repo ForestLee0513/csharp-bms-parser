@@ -9,8 +9,9 @@ namespace BMSParser
         #region Custom Definition
         public Extension Extension { get; set; }
         public RankType RankType { get; set; } = RankType.RANK;
-        public string SHA256 { get; set; }
         public string MD5 { get; set; }
+        public string SHA256 { get; set; }
+        public string SHA512 { get; set; }
         public Base Base { get; set; }
         public BMSKey Mode { get; set; }
         #endregion

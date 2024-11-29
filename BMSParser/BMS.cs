@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using static BMSParser.Define.BMSModel;
 using static BMSParser.Define.PatternProcessor;
@@ -34,6 +34,31 @@ namespace BMSParser
             #endregion
 
             model.Mode = model.Extension == Extension.PMS ? BMSKey.POPN : BMSKey.BMS_5K_ONLY;
+
+            #region Hashing
+            string md5Hash = "";
+            using (var md5Stream = new MemoryStream(File.ReadAllBytes(path)))
+            {
+                md5Hash = BitConverter.ToString(MD5.Create().ComputeHash(md5Stream)).Replace("-", "").ToLower();
+            }
+
+            string sha256Hash = "";
+            using (var sha256Stream = new MemoryStream(File.ReadAllBytes(path)))
+            {
+                sha256Hash = BitConverter.ToString(SHA256.Create().ComputeHash(sha256Stream)).Replace("-", "").ToLower();
+            }
+
+            string sha512Hash = "";
+            using (var sha512Stream = new MemoryStream(File.ReadAllBytes(path)))
+            {
+                sha512Hash = BitConverter.ToString(SHA512.Create().ComputeHash(sha512Stream)).Replace("-", "").ToLower();
+            }
+
+            model.MD5 = md5Hash;
+            model.SHA256 = sha256Hash;
+            model.SHA512 = sha512Hash;
+
+            #endregion
 
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             using (var reader = new StreamReader(path, Encoding.GetEncoding(932)))
