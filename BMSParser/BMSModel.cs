@@ -12,7 +12,7 @@ namespace BMSParser
         public string SHA256 { get; set; }
         public string MD5 { get; set; }
         public Base Base { get; set; }
-        public BMSKey Mode { get; set; } = BMSKey.UNKNOWN;
+        public BMSKey Mode { get; set; }
         #endregion
 
         #region HEADER

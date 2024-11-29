@@ -46,7 +46,6 @@ namespace BMSParser
             float sum = 0;
             for (int i = 0; i < measure; i++)
             {
-                //sum += measures[i].Scale * 4.0f;
                 sum += measures[i].Scale;
             }
 
@@ -165,6 +164,16 @@ namespace BMSParser
                     }
                     assigned1PKeys[line] = true;
 
+                    if ((line == 7 || line == 8) && model.Mode == BMSKey.BMS_5K_ONLY)
+                    {
+                        model.Mode = BMSKey.BMS_7K_ONLY;
+                    }
+
+                    if (line == 5 && model.Mode == BMSKey.BMS_5K_ONLY || model.Mode == BMSKey.BMS_7K_ONLY)
+                    {
+                        model.Mode = model.Mode == BMSKey.BMS_5K_ONLY ? BMSKey.BMS_5K : BMSKey.BMS_7K;
+                    }
+
                     // 노트 추가
                     if (model.Base == Define.BMSModel.Base.BASE62)
                     {
@@ -190,6 +199,17 @@ namespace BMSParser
                         Array.Resize(ref assigned2PKeys, line + 1);
                     }
                     assigned2PKeys[line] = true;
+
+                    if (model.Mode == BMSKey.BMS_5K_ONLY || model.Mode == BMSKey.BMS_5K)
+                    {
+                        model.Mode = BMSKey.BMS_10K;
+                    }
+
+
+                    if (line == 7 || line == 8)
+                    {
+                        model.Mode = BMSKey.BMS_14K;
+                    }
 
                     // 노트 추가
                     if (model.Base == Define.BMSModel.Base.BASE62)
@@ -275,6 +295,16 @@ namespace BMSParser
                     }
                     assigned1PKeys[line] = true;
 
+                    if ((line == 7 || line == 8) && model.Mode == BMSKey.BMS_5K_ONLY)
+                    {
+                        model.Mode = BMSKey.BMS_7K_ONLY;
+                    }
+
+                    if (line == 5 && model.Mode == BMSKey.BMS_5K_ONLY || model.Mode == BMSKey.BMS_7K_ONLY)
+                    {
+                        model.Mode = model.Mode == BMSKey.BMS_5K_ONLY ? BMSKey.BMS_5K : BMSKey.BMS_7K;
+                    }
+
                     // 노트 추가
                     if (model.Base == Define.BMSModel.Base.BASE62)
                     {
@@ -307,6 +337,16 @@ namespace BMSParser
                     }
                     assigned2PKeys[line] = true;
 
+                    if (model.Mode == BMSKey.BMS_5K_ONLY || model.Mode == BMSKey.BMS_5K)
+                    {
+                        model.Mode = BMSKey.BMS_10K;
+                    }
+
+                    if (line == 7 || line == 8)
+                    {
+                        model.Mode = BMSKey.BMS_14K;
+                    }
+
                     // 노트 추가
                     if (model.Base == Define.BMSModel.Base.BASE62)
                     {
@@ -333,6 +373,16 @@ namespace BMSParser
                     }
                     assigned1PKeys[line] = true;
 
+                    if ((line == 7 || line == 8) && model.Mode == BMSKey.BMS_5K_ONLY)
+                    {
+                        model.Mode = BMSKey.BMS_7K_ONLY;
+                    }
+
+                    if (line == 5 && model.Mode == BMSKey.BMS_5K_ONLY || model.Mode == BMSKey.BMS_7K_ONLY)
+                    {
+                        model.Mode = model.Mode == BMSKey.BMS_5K_ONLY ? BMSKey.BMS_5K : BMSKey.BMS_7K;
+                    }
+
                     // 노트 추가
                     if (model.Base == Define.BMSModel.Base.BASE62)
                     {
@@ -358,6 +408,16 @@ namespace BMSParser
                         Array.Resize(ref assigned2PKeys, line + 1);
                     }
                     assigned2PKeys[line] = true;
+
+                    if (model.Mode == BMSKey.BMS_5K_ONLY || model.Mode == BMSKey.BMS_5K)
+                    {
+                        model.Mode = BMSKey.BMS_10K;
+                    }
+
+                    if (line == 7 || line == 8)
+                    {
+                        model.Mode = BMSKey.BMS_14K;
+                    }
 
                     // 노트 추가
                     if (model.Base == Define.BMSModel.Base.BASE62)
@@ -404,6 +464,13 @@ namespace BMSParser
             {
                 if (assigned2PKeys[i] == true)
                     lastP2LongNoteSection.Add(i, -1.0);
+            }
+
+            // 아무런 이벤트가 없는 마디 초기화
+            for (int i = 0; i < measures.Length; i++) 
+            {
+                if (measures[i] == null)
+                    measures[i] = new Measure();
             }
 
             for (int i = 0; i < measures.Length; i++)
@@ -462,7 +529,7 @@ namespace BMSParser
                         if (note.Value.KeySound == lnobj)
                         {
                             Timestamp prevTimestamp = GetTimestamp(lastP1Section[lane.Key]);
-                            
+
                             // 롱노트의 시작
                             if (!prevTimestamp.P1LongLane.ContainsKey(lane.Key))
                             {

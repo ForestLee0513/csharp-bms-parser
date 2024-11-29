@@ -87,14 +87,15 @@ namespace BMSParser
             // Qwilight와 같은 일부 구동기에서만 사용되는 4키, 6키의 경우는 채널 연구와 동시에 저작권적으로 사용 허가가 필요할 듯
             public enum BMSKey
             {
-                UNKNOWN,
-                BMS_5K,
+                BMS_4K,
                 BMS_5K_ONLY,
-                BMS_7K,
+                BMS_5K,
+                BMS_6K,
                 BMS_7K_ONLY,
+                BMS_7K,
                 BMS_10K,
                 BMS_14K,
-                PMS
+                POPN
             }
 
             public static Dictionary<BMSKey, KeyMap> SinglePlayKeyMap = new Dictionary<BMSKey, KeyMap>()
@@ -112,7 +113,7 @@ namespace BMSParser
                     BMSKey.BMS_7K, new KeyMap(new int[] { 0, 1, 2, 3, 4, 7, 8 }, new int[] { 5 }, new int[0])
                 },
                 {
-                    BMSKey.PMS, new KeyMap(new int[] { 0, 1, 2, 3, 4, 11, 12, 13, 14 }, new int[0], new int[0])
+                    BMSKey.POPN, new KeyMap(new int[] { 0, 1, 2, 3, 4, 11, 12, 13, 14 }, new int[0], new int[0])
                 }
             };
         }

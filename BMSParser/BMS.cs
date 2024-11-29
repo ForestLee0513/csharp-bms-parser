@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Text;
 using static BMSParser.Define.BMSModel;
 using static BMSParser.Define.PatternProcessor;
@@ -33,6 +32,8 @@ namespace BMSParser
                 throw new FileLoadException(".bms, .bme, .bml, .pms 이외의 파일은 불러올 수 없습니다.");
             }
             #endregion
+
+            model.Mode = model.Extension == Extension.PMS ? BMSKey.POPN : BMSKey.BMS_5K_ONLY;
 
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             using (var reader = new StreamReader(path, Encoding.GetEncoding(932)))
@@ -218,6 +219,16 @@ namespace BMSParser
                             model.ScrollList[decodedScrollKey] = scroll;
                         }
 
+                        if (key.StartsWith("4K"))
+                        {
+                            model.Mode = BMSKey.BMS_4K;
+                        }
+
+                        if (key.StartsWith("6K"))
+                        {
+                            model.Mode = BMSKey.BMS_6K;
+                        }
+
                         if (headerCommands.ContainsKey(key))
                         {
                             headerCommands[key](model, value);
@@ -243,38 +254,6 @@ namespace BMSParser
                 } while (!reader.EndOfStream);
             }
 
-            #region Validate Key Mode
-            BMSKey p1Key = ValidateKey(model.PatternProcessor.assigned1PKeys);
-            BMSKey p2Key = ValidateKey(model.PatternProcessor.assigned2PKeys);
-
-            // p2가 있으면서 p1이 없으면 p1으로 이동
-            if (p2Key != BMSKey.UNKNOWN && p1Key == BMSKey.UNKNOWN)
-            {
-                p1Key = p2Key;
-                p2Key = BMSKey.UNKNOWN;
-                model.PatternProcessor.assigned1PKeys = model.PatternProcessor.assigned2PKeys;
-                model.PatternProcessor.assigned2PKeys = new bool[0];
-                model.Mode = p1Key;
-            }
-            else if (p1Key != BMSKey.UNKNOWN && p2Key == BMSKey.UNKNOWN)
-            {
-                model.Mode = p1Key;
-            }
-
-            // p1과 p2가 동시에 할당되어 있다면 DP로 인식
-            if (p1Key != BMSKey.UNKNOWN && p2Key != BMSKey.UNKNOWN)
-            {
-                if (p1Key == BMSKey.BMS_5K || p1Key == BMSKey.BMS_5K_ONLY || p2Key == BMSKey.BMS_5K || p2Key == BMSKey.BMS_5K_ONLY)
-                {
-                    model.Mode = BMSKey.BMS_10K;
-                }
-                else if (p1Key == BMSKey.BMS_5K || p1Key == BMSKey.BMS_5K_ONLY || p2Key == BMSKey.BMS_5K || p2Key == BMSKey.BMS_5K_ONLY)
-                {
-                    model.Mode = BMSKey.BMS_14K;
-                }
-            }
-
-            #endregion
             Timestamp baseTimestamp = new Timestamp(0)
             {
                 Bpm = model.Bpm
@@ -284,75 +263,6 @@ namespace BMSParser
             model.PatternProcessor.CalculateTiming(model.Lnobj);
 
             return model;
-        }
-
-        private BMSKey ValidateKey(bool[] assignedKeys)
-        {
-            BMSKey checkedKey = BMSKey.UNKNOWN;
-            foreach (KeyValuePair<BMSKey, KeyMap> entry in SinglePlayKeyMap)
-            {
-                BMSKey key = entry.Key;
-                KeyMap map = entry.Value;
-
-                bool isKeyboardCorrect = false;
-                bool isScratchKeyCorrect = false;
-                bool isFootPedalKeyCorrect = false;
-
-                for (int i = 0; i < map.Keyboard.Length; i++)
-                {
-                    int targetIndex = map.Keyboard[i];
-                    if (targetIndex > assignedKeys.Length - 1 || assignedKeys[targetIndex] == false)
-                    {
-                        isKeyboardCorrect = false;
-                        break;
-                    }
-
-                    if (assignedKeys[targetIndex] == false)
-                    {
-                        isKeyboardCorrect = assignedKeys[targetIndex];
-                        break;
-                    }
-
-                    isKeyboardCorrect = assignedKeys[targetIndex];
-                }
-                if (map.Keyboard.Length == 0)
-                    isKeyboardCorrect = true;
-
-                for (int i = 0; i < map.Scratch.Length; i++)
-                {
-                    int targetIndex = map.Scratch[i];
-                    if (targetIndex > assignedKeys.Length - 1 || assignedKeys[targetIndex] == false)
-                    {
-                        isScratchKeyCorrect = false;
-                        break;
-                    }
-
-                    isScratchKeyCorrect = assignedKeys[targetIndex];
-                }
-                if (map.Scratch.Length == 0)
-                    isScratchKeyCorrect = true;
-
-                for (int i = 0; i < map.FootPedal.Length; i++)
-                {
-                    int targetIndex = map.Keyboard[i];
-                    if (targetIndex > assignedKeys.Length - 1 || assignedKeys[targetIndex] == false)
-                    {
-                        isFootPedalKeyCorrect = false;
-                        break;
-                    }
-
-                    isFootPedalKeyCorrect = assignedKeys[targetIndex];
-                }
-                if (map.FootPedal.Length == 0)
-                    isFootPedalKeyCorrect = true;
-
-                if (isKeyboardCorrect && isScratchKeyCorrect && isFootPedalKeyCorrect)
-                {
-                    checkedKey = key;
-                }
-            }
-
-            return checkedKey;
         }
 
         private delegate void CommandRunner(BMSModel model, string value);
