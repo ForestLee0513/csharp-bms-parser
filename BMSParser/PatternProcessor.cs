@@ -280,7 +280,7 @@ namespace BMSParser
                     if (splittedValue == "00")
                         continue;
 
-                    if (model.LnType == 2)
+                    if (model.LnType == Define.BMSModel.LNType.LNTYPE2)
                     {
                         Console.WriteLine($"LNTYPE 2는 지원하지 않습니다. LNTYPE 1 혹은 LNOBJ를 할당하여 롱노트 형식을 변경 해주세요.");
                         continue;
@@ -322,7 +322,7 @@ namespace BMSParser
                     if (splittedValue == "00")
                         continue;
 
-                    if (model.LnType == 2)
+                    if (model.LnType == Define.BMSModel.LNType.LNTYPE2)
                     {
                         Console.WriteLine($"LNTYPE 2는 지원하지 않습니다. LNTYPE 1 혹은 LNOBJ를 할당하여 롱노트 형식을 변경 해주세요.");
                         continue;

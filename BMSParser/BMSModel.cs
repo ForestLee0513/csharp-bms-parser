@@ -39,7 +39,7 @@ namespace BMSParser
         public string[] Wav { get; set; } = new string[62 * 62];
         public string MidiFile { get; set; }
         public string[] Bmp { get; set; } = new string[62 * 62];
-        public int LnType { get; set; } = 0;
+        public LNType LnType { get; set; } = LNType.NONE;
         #endregion
 
         #region Main Data

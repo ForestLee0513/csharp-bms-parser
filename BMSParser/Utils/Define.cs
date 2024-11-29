@@ -27,6 +27,14 @@ namespace BMSParser
                 BASE36,
                 BASE62
             }
+
+            public enum LNType
+            {
+                NONE,
+                LNTYPE1,
+                LNTYPE2,
+                LNOBJ
+            }
         }
 
         public class PatternProcessor

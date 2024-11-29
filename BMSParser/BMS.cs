@@ -418,6 +418,7 @@ namespace BMSParser
                         }
 
                         model.Lnobj = decodedLNOBJKey;
+                        model.LnType = LNType.LNOBJ;
                     }
                     catch
                     {
@@ -432,7 +433,7 @@ namespace BMSParser
                     {
                         int.TryParse(value, out int lnType);
 
-                        model.LnType = lnType;
+                        model.LnType = (LNType)lnType;
                     }
                     catch
                     {
