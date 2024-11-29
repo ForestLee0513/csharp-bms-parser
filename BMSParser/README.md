@@ -37,6 +37,9 @@ namespace example
             Console.WriteLine(model.Lnobj);
             Console.WriteLine(model.Mode);  
             Console.WriteLine(model.LnType);
+            Console.WriteLine(model.MD5);
+            Console.WriteLine(model.SHA256);
+            Console.WriteLine(model.SHA512);
 
             // TIMESTAMP //
             foreach (KeyValuePair<double, Timestamp> timestamp in model.Timestamp)
