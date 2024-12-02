@@ -6,6 +6,7 @@
 - #RANDOM GIMMIK (Sobrem - Random is also works!)
 - BPM/EXBPM/STOP GIMMIK
 - 4K/6K Extend Command
+- MD5/SHA256/SHA512 Hashing Support for IR(Internet Ranking) and illegal BMS files (like a copied patterns of IIDX or other commercial games) validation
 
 ## How to use
 ```cs
@@ -36,6 +37,9 @@ namespace example
             Console.WriteLine(model.Lnobj);
             Console.WriteLine(model.Mode);  
             Console.WriteLine(model.LnType);
+            Console.WriteLine(model.MD5);
+            Console.WriteLine(model.SHA256);
+            Console.WriteLine(model.SHA512);
 
             // TIMESTAMP //
             foreach (KeyValuePair<double, Timestamp> timestamp in model.Timestamp)
