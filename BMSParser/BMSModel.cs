@@ -45,7 +45,7 @@ namespace BMSParser
 
         #region Main Data
         public PatternProcessor PatternProcessor { get; } = new PatternProcessor();
-        public SortedDictionary<double, Timestamp> Timestamp;
+        public SortedDictionary<double, Timestamp> Timestamp { get; set; }
         #endregion
     }
 }
