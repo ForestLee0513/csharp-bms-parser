@@ -17,12 +17,13 @@ namespace BMSParser
         {
             return Decode(path, Environment.TickCount);
         }
+
         public BMSModel Decode(string path, int randomSeed)
         {
             BMSModel model = new BMSModel();
 
             #region Extension validation
-            string extension = Path.GetExtension(path);
+            string extension = Path.GetExtension(path).ToLower();
             if (extensionValidations.ContainsKey(extension))
             {
                 extensionValidations[extension](model);
