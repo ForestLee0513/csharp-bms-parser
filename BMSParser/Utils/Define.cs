@@ -16,10 +16,10 @@ namespace BMSParser
             public enum Extension
             {
                 UNDEFINED,
-                BMS,
-                BME,
-                BML,
-                PMS
+                BMS,    // standard
+                BME,    // extend
+                BML,    // long note
+                PMS     // popn
             }
 
             public enum Base
@@ -80,7 +80,7 @@ namespace BMSParser
                 /// </summary>
                 /// <param name="keyboard">노트 키에 해당되는 채널</param>
                 /// <param name="scratch">스크래치 키에 해당되는 채널</param>
-                /// <param name="footPedal">페달 키에 해당되는 채널.</param>
+                /// <param name="footPedal">페달 키에 해당되는 채널</param>
                 public KeyMap(int[] keyboard, int[] scratch, int[] footPedal)
                 {
                     Keyboard = keyboard;
@@ -89,15 +89,11 @@ namespace BMSParser
                 }
             }
 
-            // PMS는 5키 전용으로 따로 내줘야하나?
-            // 키보드매니아까지 추가할 경우 24키/48키에 대한 bms파일 채널 연구가 필요함.
-            // DP모드의 경우 1P 영역 / 2P 영역은 다른데 과연 노트 영역을 하나로 합쳐줘도 괜찮은가? TimeLine에서 1P / 2P 관리를 해줘야하는게 아닐까?
-            // Qwilight와 같은 일부 구동기에서만 사용되는 4키, 6키의 경우는 채널 연구와 동시에 저작권적으로 사용 허가가 필요할 듯
             public enum BMSKey
             {
-                BEAT_4K,
+                BEAT_4K,    // Extend command required: '#4K'
                 BEAT_5K,
-                BEAT_6K,
+                BEAT_6K,    // Extend command required: '#6K'
                 BEAT_7K,
                 BEAT_10K,
                 BEAT_14K,
