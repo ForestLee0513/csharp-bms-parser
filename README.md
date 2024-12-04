@@ -26,8 +26,8 @@
 - POPN
 #### Non-standard keys
 > These keys are not support on major BMS player(e. g. Lunatic Rave 2, beatoraja) yet. so you have to add extend command on .bms file
-- BEAT-4K (command: '#4K' / exclude )
-- BEAT-6K (command: '#6K')
+- BEAT-4K (command: '#4K' / exclude 3, 6, 7 lane)
+- BEAT-6K (command: '#6K' / exclude 4 lane)
 
 ### BMSON
 Not working on it yet. I'll working on it soon.
