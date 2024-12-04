@@ -33,7 +33,7 @@ namespace BMSParser
             }
             #endregion
 
-            model.Mode = model.Extension == Extension.PMS ? BMSKey.POPN : BMSKey.BMS_5K_ONLY;
+            model.Mode = model.Extension == Extension.PMS ? BMSKey.POPN : BMSKey.BEAT_5K;
 
             #region Hashing
             string md5Hash = "";
@@ -246,12 +246,12 @@ namespace BMSParser
 
                         if (key.StartsWith("4K"))
                         {
-                            model.Mode = BMSKey.BMS_4K;
+                            model.Mode = BMSKey.BEAT_4K;
                         }
 
                         if (key.StartsWith("6K"))
                         {
-                            model.Mode = BMSKey.BMS_6K;
+                            model.Mode = BMSKey.BEAT_6K;
                         }
 
                         if (headerCommands.ContainsKey(key))

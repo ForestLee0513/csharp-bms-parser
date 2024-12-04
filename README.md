@@ -1,4 +1,12 @@
 # CSharp BMS Parser
+## Versions
+- .NET standard 2.0 for legacy Unity like before 2021.2 but.. are you sure use theese versions?
+- .NET standard 2.1 (tested on 2022.3.19f1)
+## Requirements to use
+### Install nuget packages in non-unity project
+- System.Text.Encoding.CodePages
+    - For support uncommon encoding like Shift-JIS.
+
 ## Features
 - Basic Note output
 - Long Note output (LNTYPE 1, LNOBJ only)
@@ -52,5 +60,5 @@ namespace example
 ```
 
 ## TODO
-- [] BMSON Parse
-- [] LNTYPE 2 support
+- [ ] BMSON Parse
+- [ ] LNTYPE 2 support

@@ -164,14 +164,9 @@ namespace BMSParser
                     }
                     assigned1PKeys[line] = true;
 
-                    if ((line == 7 || line == 8) && model.Mode == BMSKey.BMS_5K_ONLY)
+                    if ((line == 7 || line == 8) && model.Mode == BMSKey.BEAT_5K)
                     {
-                        model.Mode = BMSKey.BMS_7K_ONLY;
-                    }
-
-                    if (line == 5 && model.Mode == BMSKey.BMS_5K_ONLY || model.Mode == BMSKey.BMS_7K_ONLY)
-                    {
-                        model.Mode = model.Mode == BMSKey.BMS_5K_ONLY ? BMSKey.BMS_5K : BMSKey.BMS_7K;
+                        model.Mode = BMSKey.BEAT_7K;
                     }
 
                     // 노트 추가
@@ -200,15 +195,14 @@ namespace BMSParser
                     }
                     assigned2PKeys[line] = true;
 
-                    if (model.Mode == BMSKey.BMS_5K_ONLY || model.Mode == BMSKey.BMS_5K)
+                    if (model.Mode == BMSKey.BEAT_5K)
                     {
-                        model.Mode = BMSKey.BMS_10K;
+                        model.Mode = BMSKey.BEAT_10K;
                     }
-
 
                     if (line == 7 || line == 8)
                     {
-                        model.Mode = BMSKey.BMS_14K;
+                        model.Mode = BMSKey.BEAT_14K;
                     }
 
                     // 노트 추가
@@ -295,14 +289,9 @@ namespace BMSParser
                     }
                     assigned1PKeys[line] = true;
 
-                    if ((line == 7 || line == 8) && model.Mode == BMSKey.BMS_5K_ONLY)
+                    if ((line == 7 || line == 8) && model.Mode == BMSKey.BEAT_5K)
                     {
-                        model.Mode = BMSKey.BMS_7K_ONLY;
-                    }
-
-                    if (line == 5 && model.Mode == BMSKey.BMS_5K_ONLY || model.Mode == BMSKey.BMS_7K_ONLY)
-                    {
-                        model.Mode = model.Mode == BMSKey.BMS_5K_ONLY ? BMSKey.BMS_5K : BMSKey.BMS_7K;
+                        model.Mode = BMSKey.BEAT_7K;
                     }
 
                     // 노트 추가
@@ -337,14 +326,14 @@ namespace BMSParser
                     }
                     assigned2PKeys[line] = true;
 
-                    if (model.Mode == BMSKey.BMS_5K_ONLY || model.Mode == BMSKey.BMS_5K)
+                    if (model.Mode == BMSKey.BEAT_5K)
                     {
-                        model.Mode = BMSKey.BMS_10K;
+                        model.Mode = BMSKey.BEAT_10K;
                     }
 
                     if (line == 7 || line == 8)
                     {
-                        model.Mode = BMSKey.BMS_14K;
+                        model.Mode = BMSKey.BEAT_14K;
                     }
 
                     // 노트 추가
@@ -373,14 +362,9 @@ namespace BMSParser
                     }
                     assigned1PKeys[line] = true;
 
-                    if ((line == 7 || line == 8) && model.Mode == BMSKey.BMS_5K_ONLY)
+                    if ((line == 7 || line == 8) && model.Mode == BMSKey.BEAT_5K)
                     {
-                        model.Mode = BMSKey.BMS_7K_ONLY;
-                    }
-
-                    if (line == 5 && model.Mode == BMSKey.BMS_5K_ONLY || model.Mode == BMSKey.BMS_7K_ONLY)
-                    {
-                        model.Mode = model.Mode == BMSKey.BMS_5K_ONLY ? BMSKey.BMS_5K : BMSKey.BMS_7K;
+                        model.Mode = BMSKey.BEAT_7K;
                     }
 
                     // 노트 추가
@@ -409,14 +393,14 @@ namespace BMSParser
                     }
                     assigned2PKeys[line] = true;
 
-                    if (model.Mode == BMSKey.BMS_5K_ONLY || model.Mode == BMSKey.BMS_5K)
+                    if (model.Mode == BMSKey.BEAT_5K)
                     {
-                        model.Mode = BMSKey.BMS_10K;
+                        model.Mode = BMSKey.BEAT_10K;
                     }
 
                     if (line == 7 || line == 8)
                     {
-                        model.Mode = BMSKey.BMS_14K;
+                        model.Mode = BMSKey.BEAT_14K;
                     }
 
                     // 노트 추가
