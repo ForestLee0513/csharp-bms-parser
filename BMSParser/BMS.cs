@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using static BMSParser.Define.BMSModel;
@@ -13,12 +14,31 @@ namespace BMSParser
         readonly Stack<int> randomStack = new Stack<int>();
         readonly Stack<bool> skipStack = new Stack<bool>();
 
+        // Just parse a bms file.
         public BMSModel Decode(string path)
         {
-            return Decode(path, Environment.TickCount);
+            return Decode(path, Environment.TickCount, Define.RandomMode.OFF, Define.RandomMode.OFF);
         }
 
+        // handle SP line randoms
+        public BMSModel Decode(string path, Define.RandomMode p1RandomMode)
+        {
+            return Decode(path, Environment.TickCount, p1RandomMode, Define.RandomMode.OFF);
+        }
+
+        // handle RandomSeed only
         public BMSModel Decode(string path, int randomSeed)
+        {
+            return Decode(path, randomSeed, Define.RandomMode.OFF, Define.RandomMode.OFF);
+        }
+
+        // handle DP line randoms.
+        public BMSModel Decode(string path, Define.RandomMode p1RandomMode, Define.RandomMode p2RandomMode)
+        {
+            return Decode(path, Environment.TickCount, p1RandomMode, p2RandomMode);
+        }
+
+        public BMSModel Decode(string path, int randomSeed, Define.RandomMode p1Random, Define.RandomMode p2Random)
         {
             BMSModel model = new BMSModel();
 
@@ -61,6 +81,7 @@ namespace BMSParser
 
             #endregion
 
+            #region Read a file
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             using (var reader = new StreamReader(path, Encoding.GetEncoding(932)))
             {
@@ -279,7 +300,9 @@ namespace BMSParser
                     }
                 } while (!reader.EndOfStream);
             }
+            #endregion
 
+            #region Record a timelines
             Timestamp baseTimestamp = new Timestamp(0)
             {
                 Bpm = model.Bpm
@@ -287,7 +310,9 @@ namespace BMSParser
 
             model.PatternProcessor.Timestamp.Add(0, baseTimestamp);
             model.PatternProcessor.CalculateTiming(model.Lnobj);
+            model.PatternProcessor.SetNoteRandom(model.Mode, randomSeed, p1Random, p2Random);
             model.Timestamp = model.PatternProcessor.Timestamp;
+            #endregion
 
             return model;
         }

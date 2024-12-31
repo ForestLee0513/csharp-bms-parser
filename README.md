@@ -15,6 +15,7 @@
 - BPM/EXBPM/STOP GIMMIK
 - 4K/6K Extend Command
 - MD5/SHA256/SHA512 Hashing Support for IR(Internet Ranking) and illegal BMS files(e. g. copied patterns of IIDX or other commercial games) validation
+- RANDOM, R-RANDOM, S-RANDOM line shuffle features. (now, it works RANDOM mode only. I'll add rest of modes very soon.)
 
 ## Support keys
 ### BMS
@@ -54,6 +55,11 @@ namespace example
         {
             BMS bmsParser = new BMS();
             BMSModel model = bmsParser.Decode("<bms file path>");
+            BMSModel random = bmsParser.Decode("<bms file path>", Define.RandomMode.RANDOM); // if you possible, it should only use in SP.
+            BMSModel randomDp = bmsParser.Decode("<bms file path>", Define.RandomMode.RANDOM, Define.RandomMode.RANDOM); // if you possible, it should only use in DP.
+            BMSModel modelWithSeed = bmsParser.Decode("<bms file path>", 9903); // It handles random seed like a pattern turning point like 'Sobrem x silentroom - Random'
+            BMSModel randomWithSeed = bmsParser.Decode("<bms file path>", 9903, Define.RandomMode.RANDOM); // It handles random seed like a pattern turning point and line random.
+            BMSModel randomWithSeedDP = bmsParser.Decode("<bms file path>", 9903, Define.RandomMode.RANDOM, Define.RandomMode.RANDOM); // It handles random seed like a pattern turning point and line random. and if you possible, it should only use in DP.
 
             // HEADERS //
             Console.WriteLine(model.Extension);

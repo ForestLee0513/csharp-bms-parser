@@ -103,7 +103,13 @@ namespace BMSParser
             public static Dictionary<BMSKey, KeyMap> SinglePlayKeyMap = new Dictionary<BMSKey, KeyMap>()
             {
                 {
+                    BMSKey.BEAT_4K, new KeyMap(new int[] { 0, 1, 3, 4 }, new int[0], new int[0])
+                },
+                {
                     BMSKey.BEAT_5K, new KeyMap(new int[] { 0, 1, 2, 3, 4 }, new int[] { 5 }, new int[0])
+                },
+                {
+                    BMSKey.BEAT_6K, new KeyMap(new int[] { 0, 1, 2, 4, 7, 8 }, new int[0], new int[0])
                 },
                 {
                     BMSKey.BEAT_7K, new KeyMap(new int[] { 0, 1, 2, 3, 4, 7, 8 }, new int[] { 5 }, new int[0])
@@ -136,6 +142,15 @@ namespace BMSParser
                 LN_END,
                 LANDMINE
             }
+        }
+
+        public enum RandomMode
+        {
+            OFF,
+            RANDOM,
+            R_RANDOM,
+            S_RANDOM,
+            MIRROR
         }
     }
 }
