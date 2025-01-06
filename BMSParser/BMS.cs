@@ -310,8 +310,8 @@ namespace BMSParser
 
             model.PatternProcessor.Timestamp.Add(0, baseTimestamp);
             model.PatternProcessor.CalculateTiming(model.Lnobj);
-            model.PatternProcessor.SetNoteRandom(model.Mode, randomSeed, p1Random, p2Random);
             model.Timestamp = model.PatternProcessor.Timestamp;
+            LaneModeProcessor.ProcessLaneMode(ref model, randomSeed, p1Random, p2Random);
             #endregion
 
             return model;

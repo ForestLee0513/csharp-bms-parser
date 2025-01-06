@@ -9,13 +9,14 @@ namespace BMSParser
     public class LaneModeProcessor
     {
         /// <summary>
-        /// 
+        /// 해당 BMS 모델의 라인 모드를 변경합니다. <br />
+        /// 변경 가능한 모드는 각 플레이어 레인 별 랜덤, R-랜덤, S-랜덤, 미러 임.
         /// </summary>
         /// <param name="model">라인 모드를 변경하고 싶은 모델</param>
         /// <param name="randomSeed">랜덤 시드</param>
         /// <param name="p1RandomMode">1P 랜덤 모드</param>
         /// <param name="p2RandomMode">2P 랜덤 모드</param>
-        public static void ProcessLaneMode(BMSModel model, int randomSeed, Define.RandomMode p1RandomMode, Define.RandomMode p2RandomMode)
+        public static void ProcessLaneMode(ref BMSModel model, int randomSeed, Define.RandomMode p1RandomMode, Define.RandomMode p2RandomMode)
         {
             BMSKey lineCountPerLane;
             if (model.Mode == BMSKey.BEAT_10K)
