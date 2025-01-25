@@ -732,6 +732,39 @@ namespace BMSParser
                         timestamp.P2HiddenLane[lane.Key].Add(new HiddenNote(note.Value.KeySound));
                     }
                 }
+
+                // BGM //
+                foreach (KeyValuePair<double, List<NormalNote>> bgm in measures[i].Bgm)
+                {
+                    double section = previousSectionLength + bgm.Key * measures[i].Scale;
+                    Timestamp timestamp = GetTimestamp(section);
+
+                    foreach (NormalNote bgmNote in bgm.Value)   
+                    {
+                        timestamp.BGM.Add(bgmNote);
+                    }
+                }
+
+                // BGA //
+                // Base
+                foreach (KeyValuePair<double, BGA> baseBgaEvent in measures[i].BGAEvents)
+                {
+                    double section = previousSectionLength + baseBgaEvent.Key * measures[i].Scale;
+                    Timestamp timestamp = GetTimestamp(section);
+
+                    timestamp.BaseBGA = baseBgaEvent.Value;
+                }
+
+                // Layer
+                foreach (KeyValuePair<double, BGA> layerBgaEvent in measures[i].LayerBGAEvents)
+                {
+                    double section = previousSectionLength + layerBgaEvent.Key * measures[i].Scale;
+                    Timestamp timestamp = GetTimestamp(section);
+
+                    timestamp.LayerBGA = layerBgaEvent.Value;
+                }
+                // Poor - 나중에 해도될거같긴함. (레이어 BGA에서도 애니메이션이 있는거로 아는데 배열로 해야할지 고민임 e.g. KAIDEN AURA)
+
             }
         }
 

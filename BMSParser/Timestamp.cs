@@ -31,7 +31,13 @@ namespace BMSParser
         public Dictionary<int, List<HiddenNote>> P1HiddenLane { get; set; } = new Dictionary<int, List<HiddenNote>>();
         // P2
         public Dictionary<int, List<HiddenNote>> P2HiddenLane { get; set; } = new Dictionary<int, List<HiddenNote>>();
-        
+
+        public List<NormalNote> BGM { get; set; } = new List<NormalNote>();
+
+        public BGA BaseBGA { get; set; }
+        public BGA LayerBGA { get; set; }
+        public BGA PoorBGA { get; set; }
+
         public Timestamp(double time)
         {
             Time = time;

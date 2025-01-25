@@ -18,25 +18,25 @@ namespace BMSParser
         /// <param name="p2RandomMode">2P 랜덤 모드</param>
         public static void ProcessLaneMode(ref BMSModel model, int randomSeed, Define.RandomMode p1RandomMode, Define.RandomMode p2RandomMode)
         {
-            BMSKey lineCountPerLane;
+            BMSKey lineCountPerPlayArea;
             if (model.Mode == BMSKey.BEAT_10K)
             {
-                lineCountPerLane = BMSKey.BEAT_5K;
+                lineCountPerPlayArea = BMSKey.BEAT_5K;
             }
             else if (model.Mode == BMSKey.BEAT_14K)
             {
-                lineCountPerLane = BMSKey.BEAT_7K;
+                lineCountPerPlayArea = BMSKey.BEAT_7K;
             }
             else
             {
-                lineCountPerLane = model.Mode;
+                lineCountPerPlayArea = model.Mode;
             }
 
             Random noteRandom = new Random(randomSeed);
-            int[] lineRandomMap = new int[SinglePlayKeyMap[lineCountPerLane].Keyboard.Length];
+            int[] lineRandomMap = new int[SinglePlayKeyMap[lineCountPerPlayArea].Keyboard.Length];
             for (int i = 0; i < lineRandomMap.Length; i++)
             {
-                lineRandomMap[i] = SinglePlayKeyMap[lineCountPerLane].Keyboard[i];
+                lineRandomMap[i] = SinglePlayKeyMap[lineCountPerPlayArea].Keyboard[i];
             }
 
             // NORMAL RANDOM //
@@ -62,64 +62,64 @@ namespace BMSParser
                     {
                         if (originalNormalLane.ContainsKey(lineRandomMap[i]))
                         {
-                            randomizedNormalLane.Add(SinglePlayKeyMap[lineCountPerLane].Keyboard[i], originalNormalLane[lineRandomMap[i]]);                            
+                            randomizedNormalLane.Add(SinglePlayKeyMap[lineCountPerPlayArea].Keyboard[i], originalNormalLane[lineRandomMap[i]]);                            
                         }
 
                         if (originalLongLane.ContainsKey(lineRandomMap[i]))
                         {
-                            randomizedLongLane.Add(SinglePlayKeyMap[lineCountPerLane].Keyboard[i], originalLongLane[lineRandomMap[i]]);
+                            randomizedLongLane.Add(SinglePlayKeyMap[lineCountPerPlayArea].Keyboard[i], originalLongLane[lineRandomMap[i]]);
                         }
 
                         if (originalMineLane.ContainsKey(lineRandomMap[i]))
                         {
-                            randomizedMineLane.Add(SinglePlayKeyMap[lineCountPerLane].Keyboard[i], originalMineLane[lineRandomMap[i]]);
+                            randomizedMineLane.Add(SinglePlayKeyMap[lineCountPerPlayArea].Keyboard[i], originalMineLane[lineRandomMap[i]]);
                         }
 
                         if (originalHiddenLane.ContainsKey(lineRandomMap[i]))
                         {
-                            randomizedHiddenLane.Add(SinglePlayKeyMap[lineCountPerLane].Keyboard[i], originalHiddenLane[lineRandomMap[i]]);
+                            randomizedHiddenLane.Add(SinglePlayKeyMap[lineCountPerPlayArea].Keyboard[i], originalHiddenLane[lineRandomMap[i]]);
                         }
                     }
 
                     // 스크래치 키를 새로운 랜덤화 패턴으로 복사
-                    for (int i = 0; i < SinglePlayKeyMap[lineCountPerLane].Scratch.Length; i++)
+                    for (int i = 0; i < SinglePlayKeyMap[lineCountPerPlayArea].Scratch.Length; i++)
                     {
-                        if (originalNormalLane.ContainsKey(SinglePlayKeyMap[lineCountPerLane].Scratch[i]))
+                        if (originalNormalLane.ContainsKey(SinglePlayKeyMap[lineCountPerPlayArea].Scratch[i]))
                         {
-                            randomizedNormalLane[SinglePlayKeyMap[lineCountPerLane].Scratch[i]] = originalNormalLane[SinglePlayKeyMap[lineCountPerLane].Scratch[i]];
+                            randomizedNormalLane[SinglePlayKeyMap[lineCountPerPlayArea].Scratch[i]] = originalNormalLane[SinglePlayKeyMap[lineCountPerPlayArea].Scratch[i]];
                         }
-                        if (originalLongLane.ContainsKey(SinglePlayKeyMap[lineCountPerLane].Scratch[i]))
+                        if (originalLongLane.ContainsKey(SinglePlayKeyMap[lineCountPerPlayArea].Scratch[i]))
                         {
-                            randomizedLongLane[SinglePlayKeyMap[lineCountPerLane].Scratch[i]] = originalLongLane[SinglePlayKeyMap[lineCountPerLane].Scratch[i]];
+                            randomizedLongLane[SinglePlayKeyMap[lineCountPerPlayArea].Scratch[i]] = originalLongLane[SinglePlayKeyMap[lineCountPerPlayArea].Scratch[i]];
                         }
-                        if (originalMineLane.ContainsKey(SinglePlayKeyMap[lineCountPerLane].Scratch[i]))
+                        if (originalMineLane.ContainsKey(SinglePlayKeyMap[lineCountPerPlayArea].Scratch[i]))
                         {
-                            randomizedMineLane[SinglePlayKeyMap[lineCountPerLane].Scratch[i]] = originalMineLane[SinglePlayKeyMap[lineCountPerLane].Scratch[i]];
+                            randomizedMineLane[SinglePlayKeyMap[lineCountPerPlayArea].Scratch[i]] = originalMineLane[SinglePlayKeyMap[lineCountPerPlayArea].Scratch[i]];
                         }
-                        if (originalHiddenLane.ContainsKey(SinglePlayKeyMap[lineCountPerLane].Scratch[i]))
+                        if (originalHiddenLane.ContainsKey(SinglePlayKeyMap[lineCountPerPlayArea].Scratch[i]))
                         {
-                            randomizedHiddenLane[SinglePlayKeyMap[lineCountPerLane].Scratch[i]] = originalHiddenLane[SinglePlayKeyMap[lineCountPerLane].Scratch[i]];
+                            randomizedHiddenLane[SinglePlayKeyMap[lineCountPerPlayArea].Scratch[i]] = originalHiddenLane[SinglePlayKeyMap[lineCountPerPlayArea].Scratch[i]];
                         }
                     }
 
                     // 페달 키를 새로운 랜덤화 패턴으로 복사
-                    for (int i = 0; i < SinglePlayKeyMap[lineCountPerLane].FootPedal.Length; i++)
+                    for (int i = 0; i < SinglePlayKeyMap[lineCountPerPlayArea].FootPedal.Length; i++)
                     {
-                        if (originalNormalLane.ContainsKey(SinglePlayKeyMap[lineCountPerLane].FootPedal[i]))
+                        if (originalNormalLane.ContainsKey(SinglePlayKeyMap[lineCountPerPlayArea].FootPedal[i]))
                         {
-                            randomizedNormalLane[SinglePlayKeyMap[lineCountPerLane].FootPedal[i]] = originalNormalLane[SinglePlayKeyMap[lineCountPerLane].FootPedal[i]];
+                            randomizedNormalLane[SinglePlayKeyMap[lineCountPerPlayArea].FootPedal[i]] = originalNormalLane[SinglePlayKeyMap[lineCountPerPlayArea].FootPedal[i]];
                         }
-                        if (originalLongLane.ContainsKey(SinglePlayKeyMap[lineCountPerLane].FootPedal[i]))
+                        if (originalLongLane.ContainsKey(SinglePlayKeyMap[lineCountPerPlayArea].FootPedal[i]))
                         {
-                            randomizedLongLane[SinglePlayKeyMap[lineCountPerLane].FootPedal[i]] = originalLongLane[SinglePlayKeyMap[lineCountPerLane].FootPedal[i]];
+                            randomizedLongLane[SinglePlayKeyMap[lineCountPerPlayArea].FootPedal[i]] = originalLongLane[SinglePlayKeyMap[lineCountPerPlayArea].FootPedal[i]];
                         }
-                        if (originalMineLane.ContainsKey(SinglePlayKeyMap[lineCountPerLane].FootPedal[i]))
+                        if (originalMineLane.ContainsKey(SinglePlayKeyMap[lineCountPerPlayArea].FootPedal[i]))
                         {
-                            randomizedMineLane[SinglePlayKeyMap[lineCountPerLane].FootPedal[i]] = originalMineLane[SinglePlayKeyMap[lineCountPerLane].FootPedal[i]];
+                            randomizedMineLane[SinglePlayKeyMap[lineCountPerPlayArea].FootPedal[i]] = originalMineLane[SinglePlayKeyMap[lineCountPerPlayArea].FootPedal[i]];
                         }
-                        if (originalHiddenLane.ContainsKey(SinglePlayKeyMap[lineCountPerLane].FootPedal[i]))
+                        if (originalHiddenLane.ContainsKey(SinglePlayKeyMap[lineCountPerPlayArea].FootPedal[i]))
                         {
-                            randomizedHiddenLane[SinglePlayKeyMap[lineCountPerLane].FootPedal[i]] = originalHiddenLane[SinglePlayKeyMap[lineCountPerLane].FootPedal[i]];
+                            randomizedHiddenLane[SinglePlayKeyMap[lineCountPerPlayArea].FootPedal[i]] = originalHiddenLane[SinglePlayKeyMap[lineCountPerPlayArea].FootPedal[i]];
                         }
                     }
 
@@ -152,64 +152,64 @@ namespace BMSParser
                     {
                         if (originalNormalLane.ContainsKey(lineRandomMap[i]))
                         {
-                            randomizedNormalLane.Add(SinglePlayKeyMap[lineCountPerLane].Keyboard[i], originalNormalLane[lineRandomMap[i]]);
+                            randomizedNormalLane.Add(SinglePlayKeyMap[lineCountPerPlayArea].Keyboard[i], originalNormalLane[lineRandomMap[i]]);
                         }
 
                         if (originalLongLane.ContainsKey(lineRandomMap[i]))
                         {
-                            randomizedLongLane.Add(SinglePlayKeyMap[lineCountPerLane].Keyboard[i], originalLongLane[lineRandomMap[i]]);
+                            randomizedLongLane.Add(SinglePlayKeyMap[lineCountPerPlayArea].Keyboard[i], originalLongLane[lineRandomMap[i]]);
                         }
 
                         if (originalMineLane.ContainsKey(lineRandomMap[i]))
                         {
-                            randomizedMineLane.Add(SinglePlayKeyMap[lineCountPerLane].Keyboard[i], originalMineLane[lineRandomMap[i]]);
+                            randomizedMineLane.Add(SinglePlayKeyMap[lineCountPerPlayArea].Keyboard[i], originalMineLane[lineRandomMap[i]]);
                         }
 
                         if (originalHiddenLane.ContainsKey(lineRandomMap[i]))
                         {
-                            randomizedHiddenLane.Add(SinglePlayKeyMap[lineCountPerLane].Keyboard[i], originalHiddenLane[lineRandomMap[i]]);
+                            randomizedHiddenLane.Add(SinglePlayKeyMap[lineCountPerPlayArea].Keyboard[i], originalHiddenLane[lineRandomMap[i]]);
                         }
                     }
 
                     // 스크래치 키를 새로운 랜덤화 패턴으로 복사
-                    for (int i = 0; i < SinglePlayKeyMap[lineCountPerLane].Scratch.Length; i++)
+                    for (int i = 0; i < SinglePlayKeyMap[lineCountPerPlayArea].Scratch.Length; i++)
                     {
-                        if (originalNormalLane.ContainsKey(SinglePlayKeyMap[lineCountPerLane].Scratch[i]))
+                        if (originalNormalLane.ContainsKey(SinglePlayKeyMap[lineCountPerPlayArea].Scratch[i]))
                         {
-                            randomizedNormalLane[SinglePlayKeyMap[lineCountPerLane].Scratch[i]] = originalNormalLane[SinglePlayKeyMap[lineCountPerLane].Scratch[i]];
+                            randomizedNormalLane[SinglePlayKeyMap[lineCountPerPlayArea].Scratch[i]] = originalNormalLane[SinglePlayKeyMap[lineCountPerPlayArea].Scratch[i]];
                         }
-                        if (originalLongLane.ContainsKey(SinglePlayKeyMap[lineCountPerLane].Scratch[i]))
+                        if (originalLongLane.ContainsKey(SinglePlayKeyMap[lineCountPerPlayArea].Scratch[i]))
                         {
-                            randomizedLongLane[SinglePlayKeyMap[lineCountPerLane].Scratch[i]] = originalLongLane[SinglePlayKeyMap[lineCountPerLane].Scratch[i]];
+                            randomizedLongLane[SinglePlayKeyMap[lineCountPerPlayArea].Scratch[i]] = originalLongLane[SinglePlayKeyMap[lineCountPerPlayArea].Scratch[i]];
                         }
-                        if (originalMineLane.ContainsKey(SinglePlayKeyMap[lineCountPerLane].Scratch[i]))
+                        if (originalMineLane.ContainsKey(SinglePlayKeyMap[lineCountPerPlayArea].Scratch[i]))
                         {
-                            randomizedMineLane[SinglePlayKeyMap[lineCountPerLane].Scratch[i]] = originalMineLane[SinglePlayKeyMap[lineCountPerLane].Scratch[i]];
+                            randomizedMineLane[SinglePlayKeyMap[lineCountPerPlayArea].Scratch[i]] = originalMineLane[SinglePlayKeyMap[lineCountPerPlayArea].Scratch[i]];
                         }
-                        if (originalHiddenLane.ContainsKey(SinglePlayKeyMap[lineCountPerLane].Scratch[i]))
+                        if (originalHiddenLane.ContainsKey(SinglePlayKeyMap[lineCountPerPlayArea].Scratch[i]))
                         {
-                            randomizedHiddenLane[SinglePlayKeyMap[lineCountPerLane].Scratch[i]] = originalHiddenLane[SinglePlayKeyMap[lineCountPerLane].Scratch[i]];
+                            randomizedHiddenLane[SinglePlayKeyMap[lineCountPerPlayArea].Scratch[i]] = originalHiddenLane[SinglePlayKeyMap[lineCountPerPlayArea].Scratch[i]];
                         }
                     }
 
                     // 페달 키를 새로운 랜덤화 패턴으로 복사
-                    for (int i = 0; i < SinglePlayKeyMap[lineCountPerLane].FootPedal.Length; i++)
+                    for (int i = 0; i < SinglePlayKeyMap[lineCountPerPlayArea].FootPedal.Length; i++)
                     {
-                        if (originalNormalLane.ContainsKey(SinglePlayKeyMap[lineCountPerLane].FootPedal[i]))
+                        if (originalNormalLane.ContainsKey(SinglePlayKeyMap[lineCountPerPlayArea].FootPedal[i]))
                         {
-                            randomizedNormalLane[SinglePlayKeyMap[lineCountPerLane].FootPedal[i]] = originalNormalLane[SinglePlayKeyMap[lineCountPerLane].FootPedal[i]];
+                            randomizedNormalLane[SinglePlayKeyMap[lineCountPerPlayArea].FootPedal[i]] = originalNormalLane[SinglePlayKeyMap[lineCountPerPlayArea].FootPedal[i]];
                         }
-                        if (originalLongLane.ContainsKey(SinglePlayKeyMap[lineCountPerLane].FootPedal[i]))
+                        if (originalLongLane.ContainsKey(SinglePlayKeyMap[lineCountPerPlayArea].FootPedal[i]))
                         {
-                            randomizedLongLane[SinglePlayKeyMap[lineCountPerLane].FootPedal[i]] = originalLongLane[SinglePlayKeyMap[lineCountPerLane].FootPedal[i]];
+                            randomizedLongLane[SinglePlayKeyMap[lineCountPerPlayArea].FootPedal[i]] = originalLongLane[SinglePlayKeyMap[lineCountPerPlayArea].FootPedal[i]];
                         }
-                        if (originalMineLane.ContainsKey(SinglePlayKeyMap[lineCountPerLane].FootPedal[i]))
+                        if (originalMineLane.ContainsKey(SinglePlayKeyMap[lineCountPerPlayArea].FootPedal[i]))
                         {
-                            randomizedMineLane[SinglePlayKeyMap[lineCountPerLane].FootPedal[i]] = originalMineLane[SinglePlayKeyMap[lineCountPerLane].FootPedal[i]];
+                            randomizedMineLane[SinglePlayKeyMap[lineCountPerPlayArea].FootPedal[i]] = originalMineLane[SinglePlayKeyMap[lineCountPerPlayArea].FootPedal[i]];
                         }
-                        if (originalHiddenLane.ContainsKey(SinglePlayKeyMap[lineCountPerLane].FootPedal[i]))
+                        if (originalHiddenLane.ContainsKey(SinglePlayKeyMap[lineCountPerPlayArea].FootPedal[i]))
                         {
-                            randomizedHiddenLane[SinglePlayKeyMap[lineCountPerLane].FootPedal[i]] = originalHiddenLane[SinglePlayKeyMap[lineCountPerLane].FootPedal[i]];
+                            randomizedHiddenLane[SinglePlayKeyMap[lineCountPerPlayArea].FootPedal[i]] = originalHiddenLane[SinglePlayKeyMap[lineCountPerPlayArea].FootPedal[i]];
                         }
                     }
 
@@ -220,6 +220,12 @@ namespace BMSParser
                 }
             }
             // R-RANDOM //
+            int[] r_RandomMap = new int[SinglePlayKeyMap[lineCountPerPlayArea].Keyboard.Length];
+            for (int i = 0; i < r_RandomMap.Length; i++)
+            {
+                r_RandomMap[i] = SinglePlayKeyMap[lineCountPerPlayArea].Keyboard[i];
+            }
+
             if (p1RandomMode == Define.RandomMode.R_RANDOM)
             {
 
