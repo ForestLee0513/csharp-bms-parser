@@ -57,8 +57,8 @@ namespace BMSParser
         private readonly SortedDictionary<double, BGA> layerBGAEvents = new SortedDictionary<double, BGA>();
         public SortedDictionary<double, BGA> LayerBGAEvents { get { return layerBGAEvents; } }
         // 미스레이어
-        private readonly SortedDictionary<double, BGA> poorBga = new SortedDictionary<double, BGA>();
-        public SortedDictionary<double, BGA> PoorBGA { get { return poorBga; } }
+        private readonly SortedDictionary<double, BGA> poorBGAEvents = new SortedDictionary<double, BGA>();
+        public SortedDictionary<double, BGA> PoorBGAEvents { get { return poorBGAEvents; } }
 
         public float PrevBeat { get; set; }
 
@@ -125,7 +125,7 @@ namespace BMSParser
                     layerBGAEvents.Add(pos, new BGA(bmp));
                     break;
                 case Define.BMSObject.BGA.POOR:
-                    poorBga.Add(pos, new BGA(bmp));
+                    poorBGAEvents.Add(pos, new BGA(bmp));
                     break;
             }
         }

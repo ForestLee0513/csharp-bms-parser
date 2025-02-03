@@ -756,15 +756,22 @@ namespace BMSParser
                 }
 
                 // Layer
-                foreach (KeyValuePair<double, BGA> layerBgaEvent in measures[i].LayerBGAEvents)
+                foreach (KeyValuePair<double, BGA> layerBGAEvent in measures[i].LayerBGAEvents)
                 {
-                    double section = previousSectionLength + layerBgaEvent.Key * measures[i].Scale;
+                    double section = previousSectionLength + layerBGAEvent.Key * measures[i].Scale;
                     Timestamp timestamp = GetTimestamp(section);
 
-                    timestamp.LayerBGA = layerBgaEvent.Value;
+                    timestamp.LayerBGA = layerBGAEvent.Value;
                 }
-                // Poor - 나중에 해도될거같긴함. (레이어 BGA에서도 애니메이션이 있는거로 아는데 배열로 해야할지 고민임 e.g. KAIDEN AURA)
 
+                // MISS LAYER
+                foreach (KeyValuePair<double, BGA> poorBGAEvent in measures[i].PoorBGAEvents)
+                {
+                    double section = previousSectionLength + poorBGAEvent.Key * measures[i].Scale;
+                    Timestamp timestamp = GetTimestamp(section);
+
+                    timestamp.PoorBGA = poorBGAEvent.Value;
+                }
             }
         }
 
