@@ -32,7 +32,7 @@ namespace BMSParser
                 lineCountPerPlayArea = model.Mode;
             }
 
-            Random noteRandom = new Random(randomSeed);
+            Random lineRandomInstance = new Random(randomSeed);
             int[] lineRandomMap = new int[SinglePlayKeyMap[lineCountPerPlayArea].Keyboard.Length];
             for (int i = 0; i < lineRandomMap.Length; i++)
             {
@@ -42,8 +42,7 @@ namespace BMSParser
             // NORMAL RANDOM //
             if (p1RandomMode == Define.RandomMode.RANDOM)
             {
-                lineRandomMap = lineRandomMap.OrderBy(_ => noteRandom.Next()).ToArray();
-
+                lineRandomMap = lineRandomMap.OrderBy(_ => lineRandomInstance.Next()).ToArray();
                 foreach (KeyValuePair<double, Timestamp> timestamp in model.Timestamp)
                 {
                     Dictionary<int, List<NormalNote>> originalNormalLane = timestamp.Value.P1Lane;
@@ -132,7 +131,7 @@ namespace BMSParser
 
             if (p2RandomMode == Define.RandomMode.RANDOM)
             {
-                lineRandomMap = lineRandomMap.OrderBy(_ => noteRandom.Next()).ToArray();
+                lineRandomMap = lineRandomMap.OrderBy(_ => lineRandomInstance.Next()).ToArray();
 
                 foreach (KeyValuePair<double, Timestamp> timestamp in model.Timestamp)
                 {
@@ -219,21 +218,32 @@ namespace BMSParser
                     model.Timestamp[timestamp.Key].P2HiddenLane = randomizedHiddenLane;
                 }
             }
+
             // R-RANDOM //
-            int[] r_RandomMap = new int[SinglePlayKeyMap[lineCountPerPlayArea].Keyboard.Length];
-            for (int i = 0; i < r_RandomMap.Length; i++)
+            int[] p1_r_RandomMap = new int[SinglePlayKeyMap[lineCountPerPlayArea].Keyboard.Length];
+            for (int i = 0; i < p1_r_RandomMap.Length; i++)
             {
-                r_RandomMap[i] = SinglePlayKeyMap[lineCountPerPlayArea].Keyboard[i];
+                p1_r_RandomMap[i] = SinglePlayKeyMap[lineCountPerPlayArea].Keyboard[i];
             }
 
             if (p1RandomMode == Define.RandomMode.R_RANDOM)
             {
+                int shiftCount = lineRandomInstance.Next(1, p1_r_RandomMap.Length);
 
+                Console.WriteLine($"P1 R-RAN Shift Count {shiftCount}");
+            }
+
+            int[] p2_r_RandomMap = new int[SinglePlayKeyMap[lineCountPerPlayArea].Keyboard.Length];
+            for (int i = 0; i < p2_r_RandomMap.Length; i++)
+            {
+                p2_r_RandomMap[i] = SinglePlayKeyMap[lineCountPerPlayArea].Keyboard[i];
             }
 
             if (p2RandomMode == Define.RandomMode.R_RANDOM)
             {
+                int shiftCount = lineRandomInstance.Next(1, p2_r_RandomMap.Length);
 
+                Console.WriteLine($"P2 R-RAN Shift Count {shiftCount}");
             }
 
             // S-RANDOM //
