@@ -95,6 +95,8 @@ namespace BMSParser
         /// <param name="newBpm">변경하려고 하는 BPM</param>
         public void AddBPMEvent(double pos, double newBpm)
         {
+            if (bpmEvents.ContainsKey(pos)) return;
+
             bpmEvents.Add(pos, new BPM(newBpm));
         }
 
